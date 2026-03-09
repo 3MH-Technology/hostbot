@@ -28,6 +28,9 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("PANEL_SECRET_KEY", "CHANGE_ME_" + os.urandom(16).hex())
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
+# If the environment variable is not set, we use the default password, 
+# but it's better to store a hash or use a secret key.
+# For maximum privacy, we will allow the admin password to be an environment variable.
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASS", "Mm@123456")
 
 running_procs = {}
