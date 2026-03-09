@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الذئب الابيض · @j49_c</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #000000;
+      --surface: rgba(28, 28, 30, 0.6);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --primary: #0A84FF;
+      --primary-hover: #0071E3;
+      --text: #F5F5F7;
+      --muted: #86868B;
+      --error: #FF453A;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 15% 50%, rgba(10, 132, 255, 0.15), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.05), transparent 25%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(10, 132, 255, 0.5), transparent);
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      width: min(420px, 92vw);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 24px;
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      padding: 40px 32px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 42px;
+      margin-bottom: 16px;
+      display: inline-block;
+      background: linear-gradient(135deg, #fff, #a1a1a6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input::placeholder {
+      color: #6e6e73;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      background: rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid transparent;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(10, 132, 255, 0.1);
+    }
+
+    .msg {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 20px;
+    }
+
+    .footer {
+      margin-top: 32px;
+      font-size: 12px;
+      color: #424245;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo"></div>
+      <div class="title">الذئب الابيض</div>
+      <div class="sub">Central Intelligence Node<br>Authorized Personnel Only</div>
+
+      <div class="input-group">
+        <input id="u" placeholder="Agent ID / Username" autocomplete="username">
+      </div>
+      <div class="input-group">
+        <input id="p" placeholder="Passcode" type="password" autocomplete="current-password">
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="doLogin()">Authenticate</button>
+      </div>
+
+      <div class="msg" id="m"></div>
+    </div>
+    <div class="footer">All rights reserved. الذئب الابيض - @j49_c</div>
+  </div>
+
+  <script>
+    async function doLogin() {
+      const m = document.getElementById('m');
+      m.textContent = 'Authenticating...';
+      const username = document.getElementById('u').value.trim();
+      const password = document.getElementById('p').value;
+      const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+      const d = await r.json().catch(() => ({ success: false, message: 'Server error' }));
+      if (!r.ok || !d.success) { m.style.color = "var(--error)"; m.textContent = d.message || 'Authentication failed'; return; }
+      m.style.color = "#32D74B";
+      m.textContent = 'Access Granted.';
+      setTimeout(() => location.href = d.is_admin ? '/admin' : '/', 500);
+    }
+  </script>
+</body>
+
+</html>

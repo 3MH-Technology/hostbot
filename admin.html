@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الذئب الابيض · @j49_c</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #000000;
+      --bg-elevated: rgba(28, 28, 30, 0.6);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #F5F5F7;
+      --muted: #86868B;
+      --primary: #0A84FF;
+      --primary-hover: #0071E3;
+      --danger: #FF453A;
+      --ok: #32D74B;
+      --warn: #FF9F0A;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(10, 132, 255, 0.1), transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(255, 69, 58, 0.05), transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo span {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      outline: none;
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(255, 69, 58, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 69, 58, 0.25);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 24px;
+      animation: fadeUp 0.6s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .k {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .v {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .card-info {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    h2 {
+      margin: 40px 0 16px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .table-wrapper {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th,
+    td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+
+    .tag.ok {
+      color: var(--ok);
+      border-color: rgba(50, 215, 75, 0.3);
+      background: rgba(50, 215, 75, 0.1);
+    }
+
+    .tag.bad {
+      color: var(--danger);
+      border-color: rgba(255, 69, 58, 0.3);
+      background: rgba(255, 69, 58, 0.1);
+    }
+
+    .tag.mid {
+      color: var(--warn);
+      border-color: rgba(255, 159, 10, 0.3);
+      background: rgba(255, 159, 10, 0.1);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    input {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+      width: 100%;
+      max-width: 300px;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+    }
+
+    .msg-bar {
+      display: inline-block;
+      margin-left: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <div class="logo">الذئب الابيض <span>CENTRAL COMMAND</span></div>
+    <div style="display:flex;gap:12px;">
+      <button class="btn" onclick="location.href='/'">Operative Dashboard</button>
+      <button class="btn btn-danger" onclick="location.href='/logout'">Terminate Session</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <div class="card">
+        <div class="k">Containers Total</div>
+        <div class="v" id="st_total">0</div>
+      </div>
+      <div class="card">
+        <div class="k">Online Nodes</div>
+        <div class="v" id="st_run">0</div>
+        <div class="card-info" style="color:var(--ok)">Actively connected</div>
+      </div>
+      <div class="card">
+        <div class="k">Booting / Pending</div>
+        <div class="v" id="st_ins">0</div>
+        <div class="card-info" style="color:var(--warn)">Awaiting handshake</div>
+      </div>
+      <div class="card">
+        <div class="k">Quarantined</div>
+        <div class="v" id="st_ban">0</div>
+        <div class="card-info" style="color:var(--danger)">Restricted access</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card">
+        <div class="k">Total Operatives</div>
+        <div class="v" id="u_total">0</div>
+      </div>
+      <div class="card">
+        <div class="k">Active Clearances</div>
+        <div class="v" id="u_active">0</div>
+      </div>
+      <div class="card">
+        <div class="k">Level 5 Clearance</div>
+        <div class="v" id="u_premium">0</div>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:center;">
+        <div class="k">Protocols</div>
+        <div class="card-info" style="font-size:13px;">Standard: 1 Container<br>Level 5: 5 Containers</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:32px;">
+      <button class="btn btn-primary" onclick="refreshAll()">Sync Data</button>
+      <span class="msg-bar" id="msg">Authenticating...</span>
+    </div>
+
+    <h2>Node Directory</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Identifier</th>
+            <th>Alias</th>
+            <th>Operative</th>
+            <th>Main Routine</th>
+            <th>Status</th>
+            <th>Override</th>
+          </tr>
+        </thead>
+        <tbody id="serversT"></tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:40px">Operative Roster</h2>
+    <div class="row">
+      <input id="searchUser" placeholder="Search by Designation..." oninput="filterUsers()">
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Designation</th>
+            <th>Comm Line (Email)</th>
+            <th>Nodes</th>
+            <th>Access</th>
+            <th>Clearance</th>
+            <th>Directives</th>
+          </tr>
+        </thead>
+        <tbody id="usersT"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let usersCache = [];
+
+    function tagStatus(s) {
+      const st = (s || '').toLowerCase();
+      if (st === 'running') return '<span class="tag ok">ONLINE</span>';
+      if (st === 'installing' || st === 'starting') return '<span class="tag mid">BOOTING</span>';
+      if (st === 'banned') return '<span class="tag bad">QUARANTINE</span>';
+      return '<span class="tag">OFFLINE</span>';
+    }
+
+    async function refreshStats() {
+      const r = await fetch('/api/admin/quickstats');
+      const d = await r.json();
+      const s = d.stats || {};
+      document.getElementById('st_total').textContent = s.servers_total || 0;
+      document.getElementById('st_run').textContent = s.servers_running || 0;
+      document.getElementById('st_ins').textContent = s.servers_installing || 0;
+      document.getElementById('st_ban').textContent = s.servers_banned || 0;
+      document.getElementById('u_total').textContent = s.users_total || 0;
+      document.getElementById('u_active').textContent = s.users_active || 0;
+      document.getElementById('u_premium').textContent = s.users_premium || 0;
+    }
+
+    async function refreshServers() {
+      const r = await fetch('/api/admin/servers');
+      const d = await r.json();
+      const t = document.getElementById('serversT'); t.innerHTML = '';
+      (d.servers || []).forEach(s => {
+        t.innerHTML += `
+      <tr>
+        <td style="font-family:monospace; color:var(--muted)">${s.folder}</td>
+        <td style="font-weight:600">${s.display_name}</td>
+        <td>${s.owner}</td>
+        <td style="font-family:monospace">${s.startup_file || '—'}</td>
+        <td>${tagStatus(s.status)}</td>
+        <td class="actions">
+          ${s.banned
+            ? `<button class="btn" onclick="banServer('${s.key}', false)">Authorize</button>`
+            : `<button class="btn btn-danger" onclick="banServer('${s.key}', true)">Quarantine (Ban)</button>`}
+        </td>
+      </tr>`;
+      });
+    }
+
+    async function banServer(key, banned) {
+      await fetch('/api/admin/server/ban', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, banned }) });
+      refreshAll();
+    }
+
+    async function refreshUsers() {
+      const r = await fetch('/api/admin/users');
+      const d = await r.json();
+      usersCache = d.users || [];
+      renderUsers(usersCache);
+    }
+
+    function renderUsers(arr) {
+      const t = document.getElementById('usersT'); t.innerHTML = '';
+      arr.forEach(u => {
+        t.innerHTML += `
+      <tr>
+        <td style="font-weight:600">${u.username}</td>
+        <td style="color:var(--muted)">${u.email || '—'}</td>
+        <td>${u.servers}</td>
+        <td>${u.active ? '<span class="tag ok">ACTIVE</span>' : '<span class="tag bad">REVOKED</span>'}</td>
+        <td>${u.premium ? '<span class="tag primary" style="background:rgba(10,132,255,0.2);color:var(--primary);border-color:rgba(10,132,255,0.4)">LEVEL 5</span>' : '<span class="tag">STANDARD</span>'}</td>
+        <td class="actions">
+          <button class="btn ${u.active ? 'btn-danger' : ''}" onclick="setActive('${u.username}', ${u.active ? 'false' : 'true'})">${u.active ? 'Revoke' : 'Reinstate'}</button>
+          <button class="btn" style="border-style:dashed" onclick="setPremium('${u.username}', ${u.premium ? 'false' : 'true'})">${u.premium ? '- Demote' : '+ Grant LVL5'}</button>
+        </td>
+      </tr>`;
+      });
+    }
+
+    async function setActive(username, active) {
+      await fetch('/api/admin/user/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, active }) });
+      refreshUsers(); refreshStats();
+    }
+    async function setPremium(username, premium) {
+      await fetch('/api/admin/user/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, premium }) });
+      refreshUsers(); refreshStats();
+    }
+    function filterUsers() {
+      const q = (document.getElementById('searchUser').value || '').toLowerCase().trim();
+      if (!q) return renderUsers(usersCache);
+      renderUsers(usersCache.filter(u => (u.username || '').toLowerCase().includes(q)));
+    }
+
+    async function refreshAll() {
+      document.getElementById('msg').textContent = 'Syncing to mainframe...';
+      await Promise.all([refreshStats(), refreshServers(), refreshUsers()]);
+      document.getElementById('msg').innerHTML = '<span style="color:var(--ok)">Sync Complete.</span>';
+    }
+    document.addEventListener('DOMContentLoaded', refreshAll);
+  </script>
+</body>
+
+</html>

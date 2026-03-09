@@ -1,0 +1,1159 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الذئب الابيض · @j49_c</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #000000;
+      --bg-elevated: rgba(28, 28, 30, 0.45);
+      --bg-card: rgba(44, 44, 46, 0.2);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #F5F5F7;
+      --muted: #86868B;
+      --primary: #0A84FF;
+      --primary-hover: #0071E3;
+      --danger: #FF453A;
+      --ok: #32D74B;
+      --warn: #FF9F0A;
+      --shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+      --radius: 20px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(1000px 500px at 15% 10%, rgba(10, 132, 255, 0.12), transparent 40%),
+        radial-gradient(1000px 500px at 85% 90%, rgba(255, 255, 255, 0.05), transparent 40%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.01) 2px, rgba(255, 255, 255, 0.01) 4px);
+      opacity: 0.3;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+    }
+
+    .logo {
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .title-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.2px;
+    }
+
+    .sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      font-family: var(--mono);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      border: none;
+    }
+
+    .btn-danger {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--danger);
+      border-color: rgba(255, 69, 58, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 69, 58, 0.25);
+      border-color: rgba(255, 69, 58, 0.5);
+    }
+
+    .btn-mini {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 32px auto 60px;
+      padding: 0 24px;
+      animation: fadeUp 0.6s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 1050px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 20px 60px rgba(10, 132, 255, 0.15);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+      pointer-events: none;
+    }
+
+    .srv-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+      margin: 0 0 4px;
+      word-break: break-all;
+    }
+
+    .srv-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 16px;
+      width: fit-content;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .pill.running .dot {
+      background: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+    }
+
+    .pill.installing .dot {
+      background: var(--warn);
+      box-shadow: 0 0 8px var(--warn);
+    }
+
+    .pill.banned .dot {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    .pill.offline .dot {
+      background: var(--muted);
+    }
+
+    #serverView {
+      display: none;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .hleft h1 {
+      margin: 0 0 4px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hleft h1::before {
+      content: '>';
+      color: var(--primary);
+      font-family: var(--mono);
+      font-weight: 400;
+    }
+
+    .hleft .muted {
+      color: var(--muted);
+      font-size: 14px;
+      font-family: var(--mono);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+    }
+
+    @media (max-width: 980px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .console-wrapper {
+      padding: 20px;
+      border-right: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 980px) {
+      .console-wrapper {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    .console-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .console-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff5f56;
+      box-shadow: 14px 0 0 #ffbd2e, 28px 0 0 #27c93f;
+      margin-right: 28px;
+    }
+
+    .console {
+      background: transparent;
+      height: 600px;
+      overflow-y: auto;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.85);
+      white-space: pre-wrap;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    .console::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .console::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .side {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn-block {
+      width: 100%;
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .stat .ico {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat b {
+      font-size: 14px;
+      font-family: var(--mono);
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    #mainFileTxt {
+      color: var(--primary);
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(10, 132, 255, 0.5);
+    }
+
+    #mainFileTxt:hover {
+      color: var(--primary-hover);
+    }
+
+    .fm-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .path-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .path-label {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .path {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .crumb a {
+      color: var(--primary);
+      text-decoration: none;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .crumb a:hover {
+      background: rgba(10, 132, 255, 0.1);
+    }
+
+    .crumb .sep {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .table th,
+    .table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 14px;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .table td:last-child {
+      width: 220px;
+    }
+
+    .name-link {
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .name-link:hover {
+      color: var(--primary);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(28, 28, 30, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+      padding: 32px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .modal h3 {
+      margin: 0 0 16px 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .modal input:focus {
+      border-color: var(--primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    #editor-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 120;
+    }
+
+    .editor {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-top {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(28, 28, 30, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .editor-top .fn {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    #ed-area {
+      flex: 1;
+      background: #1e1e1e;
+      border: none;
+      padding: 24px;
+      outline: none;
+      color: #d4d4d4;
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" onclick="goHome()" role="button" tabindex="0">
+        <div class="logo"></div>
+        <div class="title-box">
+          <div class="title">الذئب الابيض</div>
+          <span class="sub" id="pyHostTxt">Connecting...</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="adminBtn" class="btn" style="display:none" onclick="location.href='/admin'">HQ Interface</button>
+        <button id="homeBtn" class="btn" style="display:none" onclick="goHome()">Directory</button>
+        <button id="newBtn" class="btn btn-primary">+ Initialize Node</button>
+        <button class="btn btn-danger" onclick="location.href='/logout'">Disconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="homeView">
+    <div class="grid" id="cardsContainer"></div>
+  </div>
+
+  <div class="container" id="serverView">
+    <div class="header-row">
+      <div class="hleft">
+        <h1 id="srvHeader">NODE</h1>
+        <div class="muted" id="srvSub">Container Management Protocol</div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" id="tabConsole" onclick="switchTab('console')">Terminal Output</button>
+        <button class="tab" id="tabFiles" onclick="switchTab('files')">System Storage</button>
+      </div>
+    </div>
+
+    <div class="panel" id="viewConsole">
+      <div class="grid-2">
+        <div class="console-wrapper">
+          <div class="console-header">bash — terminal</div>
+          <div class="console" id="logOut">Initializing secure connection...</div>
+        </div>
+
+        <div class="side">
+          <button id="btnStart" class="btn btn-block btn-primary" onclick="srvAction('start')">EXECUTE</button>
+          <button class="btn btn-block" onclick="srvAction('restart')">REBOOT</button>
+          <button class="btn btn-block btn-danger" onclick="srvAction('stop')">HALT</button>
+
+          <div style="height: 12px;"></div>
+
+          <div class="stat">
+            <div class="ico">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div class="stat-content"><small>STATE</small><b id="statusTxt">Offline</b></div>
+          </div>
+          <div class="stat">
+            <div class="ico">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
+                <path d="M9 9h6v6H9z" />
+                <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+              </svg>
+            </div>
+            <div class="stat-content"><small>MEMORY</small><b id="memTxt">0 MB</b></div>
+          </div>
+          <div class="stat">
+            <div class="ico">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M4 17L10 11 4 5" />
+                <path d="M12 19H20" />
+              </svg>
+            </div>
+            <div class="stat-content"><small>ENTRYPOINT</small><b id="mainFileTxt" onclick="changeStartup()">Click to
+                assign</b></div>
+          </div>
+          <div class="stat">
+            <div class="ico">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20" />
+                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+              </svg>
+            </div>
+            <div class="stat-content"><small>ADDRESS</small><b id="ipTxt">0.0.0.0</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="viewFiles" style="display:none">
+      <div class="fm-top">
+        <div class="path-container">
+          <div class="path-label">Storage Volume</div>
+          <div class="path" id="pathBar"></div>
+        </div>
+        <div class="actions">
+          <button id="btnBack" class="btn btn-mini" onclick="goUp()" style="display:none">⬅ Return</button>
+          <button class="btn btn-mini" onclick="newFolder()">+ Directory</button>
+          <button class="btn btn-mini btn-primary" onclick="document.getElementById('uplFiles').click()">Upload
+            File</button>
+          <button class="btn btn-mini" onclick="document.getElementById('uplFolder').click()">Upload Bundle</button>
+        </div>
+      </div>
+
+      <input type="file" id="uplFiles" multiple hidden onchange="doUploadFiles(this)">
+      <input type="file" id="uplFolder" webkitdirectory directory multiple hidden onchange="doUploadFolder(this)">
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Entity</th>
+              <th>Size</th>
+              <th>Protocols</th>
+            </tr>
+          </thead>
+          <tbody id="fileList"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="editor-modal">
+    <div class="editor">
+      <div class="editor-top">
+        <div class="fn" id="ed-title">file</div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="saveFile()">Write to Disk</button>
+          <button class="btn" onclick="closeEditor()">Close Editor</button>
+        </div>
+      </div>
+      <textarea id="ed-area" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h3 id="mTitle">Title</h3>
+      <input id="mIn" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <div class="modal-actions">
+        <button class="btn" onclick="closeM()">Abort</button>
+        <button id="mConfirm" class="btn btn-primary">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentSrv = null, poll = null, currentFile = null, currentPath = '';
+
+    function isAuthPage() { return location.pathname.startsWith('/login') || location.pathname.startsWith('/create'); }
+    function safeRedirect(url) { if (!isAuthPage()) location.href = url; }
+
+    function statusClass(st) {
+      st = (st || '').toLowerCase();
+      if (st === 'running') return 'running';
+      if (st === 'installing' || st === 'starting') return 'installing';
+      if (st === 'banned') return 'banned';
+      return 'offline';
+    }
+
+    async function loadPythonHost() {
+      const ipTxt = document.getElementById('pyHostTxt');
+      try {
+        const r = await fetch('/servers');
+        if (r.redirected) { safeRedirect(r.url); return; }
+        const d = await r.json();
+        const port = location.port || 5000;
+        if (!d.servers || d.servers.length === 0) { ipTxt.textContent = `sys.addr: ${location.hostname}:${port}`; return; }
+        const key = d.servers[0].key || d.servers[0].folder;
+        const s = await fetch(`/server/stats/${encodeURIComponent(key)}`);
+        if (s.redirected) { safeRedirect(s.url); return; }
+        const sd = await s.json();
+        const ip = sd.ip || location.hostname;
+        ipTxt.textContent = `sys.addr: ${ip}:${port}`;
+      } catch (e) {
+        const port = location.port || 5000;
+        ipTxt.textContent = `sys.addr: ${location.hostname}:${port}`;
+      }
+    }
+
+    async function loadServers() {
+      const r = await fetch('/servers');
+      if (r.redirected) { safeRedirect(r.url); return; }
+      const d = await r.json();
+      const cont = document.getElementById('cardsContainer');
+      cont.innerHTML = '';
+      fetch('/admin').then(res => { if (!res.redirected && res.status === 200) document.getElementById('adminBtn').style.display = 'inline-block'; }).catch(() => { });
+
+      (d.servers || []).forEach(s => {
+        s.key = s.key || s.folder;
+        const div = document.createElement('div');
+        div.className = 'card';
+        const cls = statusClass(s.status);
+        const label = (s.status || 'Offline').toUpperCase();
+
+        div.innerHTML = `
+        <div>
+          <div class="srv-title">${escapeHtml(s.title)}</div>
+          <div class="srv-sub">${escapeHtml(s.subtitle || '')}</div>
+        </div>
+        <div class="pill ${cls}"><span class="dot"></span>${label}</div>
+      `;
+        div.onclick = () => openServer(s);
+        cont.appendChild(div);
+      });
+    }
+
+    function openServer(s) {
+      currentSrv = s; currentPath = '';
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('serverView').style.display = 'block';
+      document.getElementById('homeBtn').style.display = 'inline-block';
+      document.getElementById('newBtn').style.display = 'none';
+
+      document.getElementById('srvHeader').textContent = s.title;
+      document.getElementById('srvSub').textContent = s.subtitle || 'Container node verified';
+      document.getElementById('mainFileTxt').textContent = s.startup_file || "Not assigned";
+      switchTab('console');
+    }
+
+    function goHome() {
+      document.getElementById('homeView').style.display = 'block';
+      document.getElementById('serverView').style.display = 'none';
+      document.getElementById('homeBtn').style.display = 'none';
+      document.getElementById('newBtn').style.display = 'inline-block';
+      clearInterval(poll); loadServers();
+    }
+
+    function switchTab(t) {
+      document.getElementById('tabConsole').classList.toggle('active', t === 'console');
+      document.getElementById('tabFiles').classList.toggle('active', t === 'files');
+      document.getElementById('viewConsole').style.display = t === 'console' ? 'block' : 'none';
+      document.getElementById('viewFiles').style.display = t === 'files' ? 'block' : 'none';
+
+      if (t === 'console') startPolling();
+      else { clearInterval(poll); loadFiles(); }
+    }
+
+    async function startPolling() {
+      if (poll) clearInterval(poll);
+      const fn = async () => {
+        try {
+          const r = await fetch(`/server/stats/${encodeURIComponent(currentSrv.key)}`);
+          if (r.redirected) { safeRedirect(r.url); return; }
+          const d = await r.json();
+
+          document.getElementById('logOut').textContent = d.logs || "Connection established. Awaiting stream...";
+          document.getElementById('statusTxt').textContent = d.status || 'Offline';
+          document.getElementById('memTxt').textContent = d.mem || '0 MB';
+          document.getElementById('ipTxt').textContent = d.ip || '';
+
+          const running = (d.status === "Running" || d.status === "Installing" || d.status === "Starting");
+          document.getElementById('btnStart').disabled = running;
+          if (running) document.getElementById('btnStart').style.opacity = 0.5;
+          else document.getElementById('btnStart').style.opacity = 1;
+
+          const lo = document.getElementById('logOut');
+          lo.scrollTop = lo.scrollHeight;
+        } catch (e) { }
+      };
+      fn(); poll = setInterval(fn, 2000);
+    }
+
+    async function srvAction(act) { await fetch(`/server/action/${encodeURIComponent(currentSrv.key)}/${act}`, { method: 'POST' }); }
+
+    function changeStartup() {
+      openM("Assign Entrypoint (e.g., bot.py)", currentSrv.startup_file || "", async (v) => {
+        await fetch(`/server/set-startup/${encodeURIComponent(currentSrv.key)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: v })
+        });
+        currentSrv.startup_file = v;
+        document.getElementById('mainFileTxt').textContent = v || "Not assigned";
+        closeM();
+      });
+    }
+
+    async function loadFiles() {
+      const r = await fetch(`/files/list/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`);
+      if (r.redirected) { safeRedirect(r.url); return; }
+      const data = await r.json();
+      if (!data.success) { currentPath = ''; return loadFiles(); }
+
+      document.getElementById("btnBack").style.display = (currentPath && currentPath.length > 0) ? "inline-block" : "none";
+
+      const parts = (data.path || '').split('/').filter(Boolean);
+      let acc = '';
+      const crumbs = [`<span class="crumb"><a href="javascript:void(0)" onclick="jumpPath('')">~</a></span>`];
+      for (const p of parts) {
+        acc = acc ? (acc + '/' + p) : p;
+        crumbs.push(`<span class="sep">/</span><span class="crumb"><a href="javascript:void(0)" onclick="jumpPath('${escapeAttr(acc)}')">${escapeHtml(p)}</a></span>`);
+      }
+      document.getElementById('pathBar').innerHTML = crumbs.join('');
+
+      const rows = [];
+      for (const d of (data.dirs || [])) {
+        const name = d.name;
+        rows.push(`
+        <tr>
+          <td><span class="name-link" onclick="openFolder('${escapeAttr(name)}')">📁 ${escapeHtml(name)}</span></td>
+          <td style="color:var(--muted)">DIR</td>
+          <td class="actions">
+            <button class="btn btn-mini" onclick="openFolder('${escapeAttr(name)}')">Open</button>
+            <button class="btn btn-mini" onclick="renameDir('${escapeAttr(name)}')">Rename</button>
+            <button class="btn btn-mini btn-danger" onclick="deleteDir('${escapeAttr(name)}')">Delete</button>
+          </td>
+        </tr>
+      `);
+      }
+      for (const f of (data.files || [])) {
+        const relFile = currentPath ? `${currentPath}/${f.name}` : f.name;
+        rows.push(`
+        <tr>
+          <td><span class="name-link" onclick="openEditor('${escapeAttr(relFile)}')">📄 ${escapeHtml(f.name)}</span></td>
+          <td style="font-family:var(--mono); font-size:12px;">${escapeHtml(f.size || '')}</td>
+          <td class="actions">
+            <button class="btn btn-mini" onclick="renameFilePrompt('${escapeAttr(f.name)}')">Rename</button>
+            <button class="btn btn-mini btn-danger" onclick="deleteFilePrompt('${escapeAttr(f.name)}')">Delete</button>
+          </td>
+        </tr>
+      `);
+      }
+      document.getElementById('fileList').innerHTML = rows.join('');
+    }
+
+    function openFolder(name) { currentPath = currentPath ? (currentPath + '/' + name) : name; loadFiles(); }
+    function jumpPath(p) { currentPath = p || ''; loadFiles(); }
+    function goUp() {
+      if (!currentPath) return;
+      const parts = currentPath.split('/').filter(Boolean); parts.pop();
+      currentPath = parts.join('/'); loadFiles();
+    }
+
+    function newFolder() {
+      openM("Initialize Directory", "", async (v) => {
+        await fetch(`/files/mkdir/${encodeURIComponent(currentSrv.key)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name: v })
+        });
+        loadFiles(); closeM();
+      });
+    }
+    function renameDir(oldName) {
+      openM("Move / Rename Directory", oldName, async (v) => {
+        await fetch(`/files/rename/${encodeURIComponent(currentSrv.key)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: oldName, new: v })
+        });
+        loadFiles(); closeM();
+      });
+    }
+    async function deleteDir(name) {
+      if (!confirm(`Verify deletion protocol on directory '${name}'? This action cannot be reversed.`)) return;
+      await fetch(`/files/delete/${encodeURIComponent(currentSrv.key)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name, kind: 'dir' })
+      });
+      loadFiles();
+    }
+    function renameFilePrompt(oldName) {
+      openM("Move / Rename File", oldName, async (v) => {
+        await fetch(`/files/rename/${encodeURIComponent(currentSrv.key)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: oldName, new: v })
+        });
+        loadFiles(); closeM();
+      });
+    }
+    async function deleteFilePrompt(name) {
+      if (!confirm(`Verify deletion protocol on file '${name}'?`)) return;
+      await fetch(`/files/delete/${encodeURIComponent(currentSrv.key)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name, kind: 'file' })
+      });
+      loadFiles();
+    }
+    async function doUploadFiles(input) {
+      if (!input.files || !input.files.length) return;
+      const fd = new FormData();
+      for (const f of input.files) fd.append("files", f);
+      await fetch(`/files/upload/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd });
+      input.value = ""; loadFiles();
+    }
+    async function doUploadFolder(input) {
+      if (!input.files || !input.files.length) return;
+      const fd = new FormData();
+      for (const f of input.files) { fd.append("files", f); fd.append("relpaths", f.webkitRelativePath || f.name); }
+      await fetch(`/files/upload/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd });
+      input.value = ""; loadFiles();
+    }
+    async function openEditor(name) {
+      currentFile = name; document.getElementById('ed-title').textContent = name;
+      const res = await fetch(`/files/content/${encodeURIComponent(currentSrv.key)}?file=${encodeURIComponent(name)}`);
+      if (res.redirected) { safeRedirect(res.url); return; }
+      const data = await res.json();
+      document.getElementById('ed-area').value = data.content || '';
+      document.getElementById('editor-modal').style.display = 'block';
+    }
+    async function saveFile() {
+      await fetch(`/files/save/${encodeURIComponent(currentSrv.key)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: currentFile, content: document.getElementById('ed-area').value })
+      });
+      alert("Write success ✅");
+    }
+    function closeEditor() { document.getElementById('editor-modal').style.display = 'none'; }
+
+    function openM(t, v, cb) {
+      document.getElementById('modalBackdrop').style.display = 'flex';
+      document.getElementById('mTitle').textContent = t;
+      document.getElementById('mIn').value = v || "";
+      document.getElementById('mConfirm').onclick = () => cb(document.getElementById('mIn').value);
+      document.getElementById('mIn').focus();
+    }
+    function closeM() { document.getElementById('modalBackdrop').style.display = 'none'; }
+
+    document.getElementById('newBtn').onclick = () => openM("Initialize Node (Alias)", "", async (v) => {
+      const res = await fetch('/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: v })
+      });
+      const d = await res.json().catch(() => ({ success: false, message: 'Error during initialization' }));
+      if (!d.success) { alert(d.message || 'Initialization Failed'); return; }
+      closeM(); loadServers(); loadPythonHost();
+    });
+
+    function escapeHtml(s) {
+      return (s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", "&#039;");
+    }
+    function escapeAttr(s) { return escapeHtml(s).replaceAll("\\", "\\\\"); }
+
+    document.addEventListener('DOMContentLoaded', () => { loadServers(); loadPythonHost(); });
+  </script>
+</body>
+
+</html>
