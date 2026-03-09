@@ -2,7 +2,7 @@
 title: hostbot
 emoji: 🐳
 colorFrom: blue
-colorTo: black
+colorTo: indigo
 sdk: docker
 pinned: false
 ---
