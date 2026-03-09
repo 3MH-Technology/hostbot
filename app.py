@@ -991,6 +991,43 @@ def admin_quickstats():
     }})
 
 
+def run_keep_alive():
+    """Background thread to keep the server awake and monitor bots."""
+    port = int(os.environ.get("SERVER_PORT", 30170))
+    url = f"http://127.0.0.1:{port}/"
+    
+    print(f"[*] Starting Keep-Alive and Auto-Recovery system...")
+    
+    while True:
+        try:
+            # 1. Self-ping to prevent sleep
+            requests.get(url, timeout=10)
+            
+            # 2. Check and recover crashed bots (Auto-Recovery)
+            # This is a basic safety mechanism to restart nodes if they die unexpectedly
+            with lock:
+                for key, state in list(server_states.items()):
+                    if state == "Running" and key not in running_procs:
+                        # Found a bot that should be running but the process is missing
+                        print(f"[!] Auto-Recovery: Restarting crashed node '{key}'")
+                        try:
+                            owner, folder = parse_server_key(key, allow_admin=True)
+                            meta = read_meta(owner, folder)
+                            startup = meta.get("startup_file")
+                            if startup:
+                                t = threading.Thread(target=background_start, args=(key, owner, folder, startup), daemon=True)
+                                t.start()
+                        except Exception as re:
+                            print(f"[!] Recovery failed for '{key}': {re}")
+                            
+        except Exception as e:
+            print(f"[!] Keep-Alive Error: {e}")
+            
+        time.sleep(300) # Check every 5 minutes
+
 if __name__ == "__main__":
+    # Start the safety/keep-alive thread
+    threading.Thread(target=run_keep_alive, daemon=True).start()
+    
     port = int(os.environ.get("SERVER_PORT", 30170))
     app.run(host="0.0.0.0", port=port)
