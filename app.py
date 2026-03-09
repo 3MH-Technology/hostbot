@@ -473,7 +473,8 @@ def list_all_servers_for_admin():
                 "key": key,
                 "subtitle": f"Owner: {owner}",
                 "startup_file": meta.get("startup_file", ""),
-                "status": st
+                "status": st,
+                "banned": banned
             })
     return servers
 
@@ -497,7 +498,8 @@ def list_servers_for_user(username: str):
             "key": key,
             "subtitle": f"Owner: {username}",
             "startup_file": meta.get("startup_file", ""),
-            "status": st
+            "status": st,
+            "banned": banned
         })
     return servers
 
@@ -677,6 +679,19 @@ def set_startup(key):
     meta = read_meta(owner, folder)
     meta["startup_file"] = f
     write_meta(owner, folder, meta)
+    return jsonify({"success": True})
+
+
+@app.route("/server/delete/<path:key>", methods=["POST"])
+@login_required
+def server_delete(key):
+    if not can_access_key(key):
+        return jsonify({"success": False, "message": "Forbidden"}), 403
+    stop_proc(key)
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+    if os.path.isdir(server_dir):
+        shutil.rmtree(server_dir)
     return jsonify({"success": True})
 
 

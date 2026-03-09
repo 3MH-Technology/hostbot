@@ -736,6 +736,7 @@
         <button id="adminBtn" class="btn" style="display:none" onclick="location.href='/admin'">HQ Interface</button>
         <button id="homeBtn" class="btn" style="display:none" onclick="goHome()">Directory</button>
         <button id="newBtn" class="btn btn-primary">+ Initialize Node</button>
+        <button id="delSrvBtn" class="btn btn-danger" style="display:none" onclick="deleteServer()">Purge Node</button>
         <button class="btn btn-danger" onclick="location.href='/logout'">Disconnect</button>
       </div>
     </div>
@@ -941,6 +942,7 @@
       document.getElementById('serverView').style.display = 'block';
       document.getElementById('homeBtn').style.display = 'inline-block';
       document.getElementById('newBtn').style.display = 'none';
+      document.getElementById('delSrvBtn').style.display = 'inline-block';
 
       document.getElementById('srvHeader').textContent = s.title;
       document.getElementById('srvSub').textContent = s.subtitle || 'Container node verified';
@@ -952,6 +954,7 @@
       document.getElementById('homeView').style.display = 'block';
       document.getElementById('serverView').style.display = 'none';
       document.getElementById('homeBtn').style.display = 'none';
+      document.getElementById('delSrvBtn').style.display = 'none';
       document.getElementById('newBtn').style.display = 'inline-block';
       clearInterval(poll); loadServers();
     }
@@ -1127,6 +1130,12 @@
       });
       alert("Write success ✅");
     }
+    async function deleteServer() {
+      if (!currentSrv || !confirm(`Verify purging protocol on '${currentSrv.title}'? All data will be destroyed.`)) return;
+      const res = await fetch(`/server/delete/${encodeURIComponent(currentSrv.key)}`, { method: 'POST' });
+      if (res.ok) { goHome(); } else { alert("Purge request failed."); }
+    }
+
     function closeEditor() { document.getElementById('editor-modal').style.display = 'none'; }
 
     function openM(t, v, cb) {

@@ -422,6 +422,7 @@
           ${s.banned
             ? `<button class="btn" onclick="banServer('${s.key}', false)">Authorize</button>`
             : `<button class="btn btn-danger" onclick="banServer('${s.key}', true)">Quarantine (Ban)</button>`}
+          <button class="btn btn-danger" style="border-style:dotted" onclick="deleteServerAdmin('${s.key}')">Purge (Delete)</button>
         </td>
       </tr>`;
       });
@@ -429,6 +430,11 @@
 
     async function banServer(key, banned) {
       await fetch('/api/admin/server/ban', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, banned }) });
+      refreshAll();
+    }
+    async function deleteServerAdmin(key) {
+      if (!confirm(`DANGER: Are you sure you want to completely PURGE this node?`)) return;
+      await fetch(`/server/delete/${encodeURIComponent(key)}`, { method: 'POST' });
       refreshAll();
     }
 
