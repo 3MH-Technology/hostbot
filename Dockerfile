@@ -1,25 +1,26 @@
-# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Set the working directory in the container
-WORKDIR /app
-
-# Install system dependencies for psutil and others
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Create a user for Hugging Face (UID 1000 is required)
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
 
-# Run current project 
-# Change port 30170 to 7860 as it is the default for Hugging Face
+# Copy requirements first for better caching
+COPY --chown=user requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Copy all files with correct ownership
+COPY --chown=user . .
+
+# Hugging Face uses port 7860 by default
 ENV SERVER_PORT=7860
 EXPOSE 7860
 
-# Start the application
 CMD ["python", "app.py"]
