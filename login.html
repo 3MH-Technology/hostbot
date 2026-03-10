@@ -155,6 +155,7 @@
       margin-bottom: 8px;
       background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -336,6 +337,23 @@
         bt.textContent = 'RETRY';
       }
     }
+
+    // --- SECURITY PROTOCOL: ANTI-INSPECTION ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = function (e) {
+      if (e.keyCode == 123) return false; // F12
+      if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
+      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // View Source
+    };
+
+    // Debugger trap to hinder devtools
+    setInterval(() => {
+      const start = performance.now();
+      debugger;
+      if (performance.now() - start > 100) {
+        window.location.href = "about:blank";
+      }
+    }, 500);
 
     // Hit enter to login
     document.addEventListener('keypress', (e) => {

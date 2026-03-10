@@ -35,6 +35,14 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=604800 # 1 week
 )
 
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
 # If the environment variable is not set, we use the default password, 
 # but it's better to store a hash or use a secret key.
