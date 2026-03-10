@@ -4,236 +4,343 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>الذئب الابيض · @j49_c</title>
+  <title>الذئب الابيض · ACCESS CONTROL</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
     :root {
-      --bg: #000000;
-      --surface: rgba(28, 28, 30, 0.6);
-      --surface-border: rgba(255, 255, 255, 0.1);
+      --bg: #050505;
+      --card-bg: rgba(15, 15, 20, 0.7);
       --primary: #0A84FF;
-      --primary-hover: #0071E3;
-      --text: #F5F5F7;
-      --muted: #86868B;
+      --primary-glow: rgba(10, 132, 255, 0.4);
+      --accent: #5E5CE6;
+      --text: #FFFFFF;
+      --text-muted: #8E8E93;
+      --border: rgba(255, 255, 255, 0.08);
       --error: #FF453A;
     }
 
     * {
       box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      color: var(--text);
       background-color: var(--bg);
-      background-image:
-        radial-gradient(circle at 15% 50%, rgba(10, 132, 255, 0.15), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.05), transparent 25%);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
+      position: relative;
     }
 
+    /* Animated background elements */
     body::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(10, 132, 255, 0.5), transparent);
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      top: -25vw;
+      left: -25vw;
+      z-index: 0;
+      filter: blur(80px);
+      animation: float 20s infinite alternate ease-in-out;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(94, 92, 230, 0.15) 0%, transparent 70%);
+      bottom: -20vw;
+      right: -20vw;
+      z-index: 0;
+      filter: blur(80px);
+      animation: float 25s infinite alternate-reverse ease-in-out;
+    }
+
+    @keyframes float {
+      from {
+        transform: translate(0, 0) scale(1);
+      }
+
+      to {
+        transform: translate(10%, 10%) scale(1.1);
+      }
     }
 
     .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
       position: relative;
       z-index: 10;
-      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      opacity: 0;
-      transform: translateY(20px);
     }
 
-    @keyframes fadeUp {
+    .login-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 48px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
 
-    .card {
-      width: min(420px, 92vw);
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 24px;
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      padding: 40px 32px;
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      text-align: center;
+    .logo-container {
+      position: relative;
+      margin-bottom: 32px;
+      display: inline-block;
     }
 
     .logo-img {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      border-radius: 30px;
       object-fit: cover;
-      margin-bottom: 24px;
-      border: 3px solid var(--primary);
-      box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
-      animation: pulse 3s infinite ease-in-out;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: -5px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 32px;
+      z-index: 1;
+      filter: blur(15px);
+      opacity: 0.6;
+      animation: pulse 4s infinite ease-in-out;
     }
 
     @keyframes pulse {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+
+      0%,
+      100% {
+        opacity: 0.5;
+        filter: blur(10px);
       }
 
       50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 35px rgba(10, 132, 255, 0.6);
-      }
-
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+        opacity: 0.8;
+        filter: blur(18px);
       }
     }
 
-    .title {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
       margin-bottom: 8px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .sub {
-      color: var(--muted);
+    .subtitle {
+      color: var(--text-muted);
       font-size: 14px;
-      margin-bottom: 32px;
-      font-weight: 400;
-      line-height: 1.5;
+      font-weight: 500;
+      margin-bottom: 40px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .input-group {
-      position: relative;
       margin-bottom: 16px;
-      text-align: left;
+      position: relative;
     }
 
     input {
       width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
       color: var(--text);
       font-size: 15px;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       outline: none;
-      transition: all 0.2s ease;
-    }
-
-    input::placeholder {
-      color: #6e6e73;
     }
 
     input:focus {
       border-color: var(--primary);
-      background: rgba(0, 0, 0, 0.5);
-      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.1);
     }
 
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 24px;
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
     }
 
     .btn {
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      outline: none;
-    }
-
-    .btn-primary {
       background: var(--primary);
       color: white;
-      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.3);
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 12px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .btn-primary:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
+    .btn:hover {
+      background: #0071E3;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
     }
 
-    .btn-primary:active {
-      transform: translateY(1px);
+    .btn:active {
+      transform: translateY(0);
     }
 
     .msg {
-      margin-top: 16px;
-      color: var(--muted);
+      margin-top: 24px;
       font-size: 13px;
+      font-weight: 500;
       min-height: 20px;
+      transition: color 0.3s;
     }
 
     .footer {
-      margin-top: 32px;
-      font-size: 12px;
-      color: #424245;
+      margin-top: 40px;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* Fancy Loading bar */
+    .loading-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      width: 100%;
+      display: none;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="card">
-      <div class="branding">
-        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="الذئب الابيض" class="logo-img">
+    <div class="login-card">
+      <div class="logo-container">
+        <div class="logo-glow"></div>
+        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
       </div>
-      <div class="title">الذئب الابيض</div>
-      <div class="sub">لوحة إدارة البوتات الخاصة<br>Bot Management System</div>
+      <h1>الذئب الابيض</h1>
+      <div class="subtitle">System Authentication</div>
 
       <div class="input-group">
-        <input id="u" placeholder="الاسم / Username" autocomplete="username">
+        <input id="u" placeholder="Designation (Username)" autocomplete="username">
       </div>
       <div class="input-group">
         <input id="p" placeholder="Passcode" type="password" autocomplete="current-password">
       </div>
 
-      <div class="actions">
-        <button class="btn btn-primary" onclick="doLogin()">Authenticate</button>
-      </div>
+      <button class="btn" onclick="doLogin()">
+        <span id="btnText">AUTHENTICATE</span>
+        <div class="loading-bar" id="loadBar"></div>
+      </button>
 
       <div class="msg" id="m"></div>
+
+      <div class="footer">
+        © 2026 WHITE WOLF PROTOCOL [v2.4.0]<br>
+        PROTECTED BY @j49_c
+      </div>
     </div>
-    <div class="footer">All rights reserved. الذئب الابيض - @j49_c</div>
   </div>
 
   <script>
     async function doLogin() {
       const m = document.getElementById('m');
-      m.textContent = 'Authenticating...';
+      const lb = document.getElementById('loadBar');
+      const bt = document.getElementById('btnText');
+
+      m.textContent = '';
+      lb.style.display = 'block';
+      bt.textContent = 'CONNECTING...';
+
       const username = document.getElementById('u').value.trim();
       const password = document.getElementById('p').value;
-      const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      const d = await r.json().catch(() => ({ success: false, message: 'Server error' }));
-      if (!r.ok || !d.success) { m.style.color = "var(--error)"; m.textContent = d.message || 'Authentication failed'; return; }
-      m.style.color = "#32D74B";
-      m.textContent = 'Access Granted.';
-      setTimeout(() => {
-        window.location.href = d.is_admin ? './admin' : './';
-      }, 500);
+
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const d = await r.json().catch(() => ({ success: false, message: 'Encryption mismatch' }));
+
+        if (!r.ok || !d.success) {
+          m.style.color = "var(--error)";
+          m.textContent = (d.message || 'Verification Failed').toUpperCase();
+          lb.style.display = 'none';
+          bt.textContent = 'AUTHENTICATE';
+          return;
+        }
+
+        m.style.color = "#32D74B";
+        m.textContent = 'ACCESS GRANTED. INITIALIZING...';
+        bt.textContent = 'INITIALIZING...';
+
+        setTimeout(() => {
+          window.location.href = d.is_admin ? './admin' : './';
+        }, 800);
+      } catch (e) {
+        m.style.color = "var(--error)";
+        m.textContent = "UPLINK ERROR";
+        lb.style.display = 'none';
+        bt.textContent = 'RETRY';
+      }
     }
+
+    // Hit enter to login
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') doLogin();
+    });
   </script>
 </body>
 

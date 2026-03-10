@@ -4,79 +4,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>الذئب الابيض · @j49_c</title>
-
+  <title>الذئب الابيض · OPERATIVE DASHBOARD</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
     :root {
       --bg: #000000;
-      --bg-elevated: rgba(28, 28, 30, 0.45);
-      --bg-card: rgba(44, 44, 46, 0.2);
-      --border: rgba(255, 255, 255, 0.12);
-      --text: #F5F5F7;
-      --muted: #86868B;
+      --card: rgba(15, 15, 20, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
       --primary: #0A84FF;
-      --primary-hover: #0071E3;
-      --danger: #FF453A;
-      --ok: #32D74B;
-      --warn: #FF9F0A;
-      --shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
-      --radius: 20px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --primary-glow: rgba(10, 132, 255, 0.2);
+      --accent: #5E5CE6;
+      --text: #F5F5F7;
+      --text-dim: #8E8E93;
+      --success: #32D74B;
+      --warning: #FF9F0A;
+      --error: #FF453A;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --mono: 'JetBrains Mono', monospace;
     }
 
     * {
       box-sizing: border-box;
-    }
-
-    html,
-    body {
-      height: 100%;
       margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
-      color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
       background-image:
-        radial-gradient(1000px 500px at 15% 10%, rgba(10, 132, 255, 0.12), transparent 40%),
-        radial-gradient(1000px 500px at 85% 90%, rgba(255, 255, 255, 0.05), transparent 40%);
+        radial-gradient(circle at 10% 10%, var(--primary-glow), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(94, 92, 230, 0.1), transparent 40%);
       background-attachment: fixed;
-      overflow-x: hidden;
     }
 
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-      background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.01) 2px, rgba(255, 255, 255, 0.01) 4px);
-      opacity: 0.3;
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
 
-    button {
-      font-family: inherit;
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
     }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 40;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
 
-    .topbar-inner {
-      max-width: 1200px;
+    .topbar-content {
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 12px 24px;
+      padding: 16px 24px;
       display: flex;
-      gap: 16px;
       align-items: center;
       justify-content: space-between;
     }
@@ -84,107 +84,100 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       cursor: pointer;
     }
 
-    .logo-img {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       object-fit: cover;
-      border: 2px solid var(--primary);
+      border: 1px solid var(--border);
     }
 
-    .title-box {
+    .brand-info {
       display: flex;
       flex-direction: column;
-      justify-content: center;
     }
 
-    .title {
-      font-weight: 700;
+    .brand-name {
       font-size: 16px;
-      letter-spacing: -0.2px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
-    .sub {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 500;
+    .brand-status {
+      font-size: 11px;
       font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .actions {
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
     .btn {
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      text-align: center;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
-      outline: none;
-      background: var(--bg-card);
-      color: var(--text);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: var(--card);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
       transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(1px);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     .btn-primary {
       background: var(--primary);
-      color: white;
       border: none;
-      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.3);
+      color: white;
     }
 
     .btn-primary:hover {
-      background: var(--primary-hover);
-      border: none;
+      background: #0071E3;
+      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.4);
     }
 
     .btn-danger {
-      background: rgba(255, 69, 58, 0.15);
-      color: var(--danger);
-      border-color: rgba(255, 69, 58, 0.3);
+      color: var(--error);
+      background: rgba(255, 69, 58, 0.1);
+      border: 1px solid rgba(255, 69, 58, 0.2);
     }
 
     .btn-danger:hover {
-      background: rgba(255, 69, 58, 0.25);
-      border-color: rgba(255, 69, 58, 0.5);
-    }
-
-    .btn-mini {
-      padding: 6px 12px;
-      font-size: 12px;
-      border-radius: 8px;
+      background: var(--error);
+      color: white;
     }
 
     .container {
-      max-width: 1200px;
-      margin: 32px auto 60px;
+      max-width: 1400px;
+      margin: 32px auto;
       padding: 0 24px;
-      animation: fadeUp 0.6s ease;
     }
 
-    @keyframes fadeUp {
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
       from {
         opacity: 0;
         transform: translateY(10px);
@@ -196,178 +189,156 @@
       }
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    @media (max-width: 1050px) {
-      .grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 760px) {
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .card {
-      background: var(--bg-elevated);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      border-radius: var(--radius-md);
+      padding: 24px;
       cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-      min-height: 140px;
+      transition: all 0.3s;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--primary);
-      box-shadow: 0 20px 60px rgba(10, 132, 255, 0.15);
+      min-height: 160px;
+      position: relative;
+      overflow: hidden;
     }
 
     .card::before {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
-    .srv-title {
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      background: rgba(25, 25, 30, 0.8);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .srv-name {
+      font-size: 18px;
       font-weight: 700;
-      font-size: 16px;
-      letter-spacing: -0.3px;
-      margin: 0 0 4px;
-      word-break: break-all;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
     }
 
-    .srv-sub {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .srv-meta {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 500;
     }
 
-    .pill {
+    .status-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 99px;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid var(--border);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-size: 10px;
+      font-weight: 800;
+      font-family: var(--mono);
       text-transform: uppercase;
-      margin-top: 16px;
-      width: fit-content;
+      letter-spacing: 0.05em;
+      margin-top: 20px;
     }
 
     .dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
+      background: var(--text-dim);
     }
 
-    .pill.running .dot {
-      background: var(--ok);
-      box-shadow: 0 0 8px var(--ok);
+    .status-pill.running {
+      border-color: var(--success);
+      color: var(--success);
     }
 
-    .pill.installing .dot {
-      background: var(--warn);
-      box-shadow: 0 0 8px var(--warn);
+    .status-pill.running .dot {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
     }
 
-    .pill.banned .dot {
-      background: var(--danger);
-      box-shadow: 0 0 8px var(--danger);
+    .status-pill.installing {
+      border-color: var(--warning);
+      color: var(--warning);
     }
 
-    .pill.offline .dot {
-      background: var(--muted);
+    .status-pill.installing .dot {
+      background: var(--warning);
+      animation: blink 1s infinite;
     }
 
+    .status-pill.error {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .status-pill.error .dot {
+      background: var(--error);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Server Manager View */
     #serverView {
       display: none;
     }
 
-    .header-row {
+    .view-header {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
+      margin-bottom: 24px;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 24px;
     }
 
-    .hleft h1 {
-      margin: 0 0 4px;
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.8px;
+    .view-title h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .tab-group {
       display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .hleft h1::before {
-      content: '>';
-      color: var(--primary);
-      font-family: var(--mono);
-      font-weight: 400;
-    }
-
-    .hleft .muted {
-      color: var(--muted);
-      font-size: 14px;
-      font-family: var(--mono);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 4px;
-      border-radius: 14px;
+      background: var(--card);
+      padding: 6px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
     }
 
     .tab {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      padding: 8px 16px;
-      border-radius: 10px;
+      padding: 8px 18px;
+      border-radius: calc(var(--radius-sm) - 4px);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-dim);
       cursor: pointer;
       transition: all 0.2s;
-      outline: none;
     }
 
     .tab:hover {
@@ -377,362 +348,308 @@
     .tab.active {
       background: rgba(255, 255, 255, 0.1);
       color: var(--text);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .panel {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-elevated);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .grid-2 {
+    .manager-layout {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
     }
 
-    @media (max-width: 980px) {
-      .grid-2 {
+    @media (max-width: 1000px) {
+      .manager-layout {
         grid-template-columns: 1fr;
       }
     }
 
-    .console-wrapper {
-      padding: 20px;
-      border-right: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    @media (max-width: 980px) {
-      .console-wrapper {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-    }
-
-    .console-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .console-header::before {
-      content: '';
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ff5f56;
-      box-shadow: 14px 0 0 #ffbd2e, 28px 0 0 #27c93f;
-      margin-right: 28px;
-    }
-
-    .console {
-      background: transparent;
-      height: 600px;
-      overflow-y: auto;
-      overflow-x: auto;
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.85);
-      white-space: pre-wrap;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    }
-
-    .console::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    .console::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-    }
-
-    .side {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .btn-block {
-      width: 100%;
-      padding: 14px;
-      font-size: 14px;
-    }
-
-    .stat {
+    .console-box {
+      background: #000;
       border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .stat .ico {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--primary);
-      font-size: 20px;
-    }
-
-    .stat-content {
+      border-radius: var(--radius-md);
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
 
-    .stat small {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .stat b {
-      font-size: 14px;
-      font-family: var(--mono);
-      font-weight: 500;
-      word-break: break-all;
-    }
-
-    #mainFileTxt {
-      color: var(--primary);
-      cursor: pointer;
-      border-bottom: 1px dashed rgba(10, 132, 255, 0.5);
-    }
-
-    #mainFileTxt:hover {
-      color: var(--primary-hover);
-    }
-
-    .fm-top {
+    .console-nav {
+      background: #111;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    .path-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .path-label {
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    .path {
+      font-size: 11px;
       font-family: var(--mono);
-      font-size: 13px;
-      color: var(--muted);
+      color: var(--text-dim);
+    }
+
+    .dots {
       display: flex;
-      align-items: center;
       gap: 6px;
     }
 
-    .crumb a {
-      color: var(--primary);
-      text-decoration: none;
-      padding: 2px 6px;
-      border-radius: 6px;
+    .dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
     }
 
-    .crumb a:hover {
-      background: rgba(10, 132, 255, 0.1);
+    .red {
+      background: #ff5f56;
     }
 
-    .crumb .sep {
-      color: rgba(255, 255, 255, 0.2);
+    .yellow {
+      background: #ffbd2e;
     }
 
-    .table-wrapper {
-      overflow-x: auto;
+    .green {
+      background: #27c93f;
     }
 
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
+    .console-out {
+      padding: 20px;
+      height: 560px;
+      overflow-y: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e0e0e0;
+      white-space: pre-wrap;
+      position: relative;
     }
 
-    .table th,
-    .table td {
-      padding: 14px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 14px;
-    }
-
-    .table th {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .table tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .table td:last-child {
-      width: 220px;
-    }
-
-    .name-link {
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .name-link:hover {
-      color: var(--primary);
-    }
-
-    .modal-backdrop {
-      position: fixed;
+    .console-out::before {
+      content: '';
+      position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.3;
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .side-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       padding: 20px;
     }
 
-    .modal {
-      width: 100%;
-      max-width: 420px;
-      background: rgba(28, 28, 30, 0.8);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-      padding: 32px;
-      animation: fadeUp 0.3s ease;
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
     }
 
-    .modal h3 {
-      margin: 0 0 16px 0;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
+    .stat-row:last-child {
+      margin-bottom: 0;
     }
 
-    .modal input {
-      width: 100%;
-      padding: 14px 16px;
+    .ico-box {
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.4);
-      color: var(--text);
-      outline: none;
-      font-size: 15px;
-      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
     }
 
-    .modal input:focus {
+    .stat-val {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-num {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+
+    /* File Manager */
+    .file-manager {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .fm-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fm-path {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .fm-path a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px dotted transparent;
+    }
+
+    .fm-path a:hover {
+      border-bottom-color: var(--primary);
+    }
+
+    .fm-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .fm-table th,
+    .fm-table td {
+      text-align: left;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .fm-table th {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .fm-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .fm-name {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .fm-name:hover {
+      color: var(--primary);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 440px;
+      padding: 32px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-box h3 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-box input {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      color: white;
+      margin-bottom: 24px;
+      outline: none;
+    }
+
+    .modal-box input:focus {
       border-color: var(--primary);
     }
 
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-    }
-
-    #editor-modal {
-      display: none;
+    /* Editor */
+    #editor-view {
       position: fixed;
       inset: 0;
       background: var(--bg);
-      z-index: 120;
-    }
-
-    .editor {
-      height: 100%;
-      display: flex;
+      z-index: 2000;
+      display: none;
       flex-direction: column;
     }
 
     .editor-top {
       padding: 16px 24px;
       border-bottom: 1px solid var(--border);
-      background: rgba(28, 28, 30, 0.6);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      align-items: center;
+      background: #0a0a0a;
     }
 
-    .editor-top .fn {
-      font-family: var(--mono);
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    #ed-area {
+    .editor-area {
       flex: 1;
-      background: #1e1e1e;
-      border: none;
-      padding: 24px;
-      outline: none;
+      background: #000;
       color: #d4d4d4;
       font-family: var(--mono);
       font-size: 14px;
-      line-height: 1.6;
+      padding: 30px;
+      border: none;
+      outline: none;
       resize: none;
+      line-height: 1.6;
     }
   </style>
 </head>
 
 <body>
   <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand" onclick="goHome()" role="button" tabindex="0">
-        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
-        <div class="title-box">
-          <div class="title">الذئب الابيض</div>
-          <span class="sub" id="pyHostTxt">Connecting...</span>
+    <div class="topbar-content">
+      <div class="brand" onclick="goHome()">
+        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="brand-logo">
+        <div class="brand-info">
+          <span class="brand-name">الذئب الابيض</span>
+          <span class="brand-status" id="sysAddr">CONNECTING...</span>
         </div>
       </div>
-
-      <div class="actions">
-        <button id="adminBtn" class="btn" style="display:none" onclick="location.href='/admin'">HQ Interface</button>
-        <button id="homeBtn" class="btn" style="display:none" onclick="goHome()">Directory</button>
-        <button id="newBtn" class="btn btn-primary">+ Initialize Node</button>
-        <button id="delSrvBtn" class="btn btn-danger" style="display:none" onclick="deleteServer()">Purge Node</button>
-        <button class="btn btn-danger" onclick="location.href='/logout'">Disconnect</button>
+      <div class="nav-actions">
+        <button id="adminBtn" class="btn" style="display:none" onclick="location.href='/admin'">OPERATIONS HQ</button>
+        <button id="homeBtn" class="btn" style="display:none" onclick="goHome()">DASHBOARD</button>
+        <button id="newBtn" class="btn btn-primary">+ NEW ENGINE</button>
+        <button id="delBtn" class="btn btn-danger" style="display:none" onclick="deleteServer()">PURGE</button>
+        <button class="btn btn-danger" onclick="location.href='/logout'">TERMINATE</button>
       </div>
     </div>
   </div>
@@ -742,130 +659,105 @@
   </div>
 
   <div class="container" id="serverView">
-    <div class="header-row">
-      <div class="hleft">
-        <h1 id="srvHeader">NODE</h1>
-        <div class="muted" id="srvSub">Container Management Protocol</div>
+    <div class="view-header">
+      <div class="view-title">
+        <h1 id="srvHeader">OPERATIVE</h1>
+        <div style="color:var(--text-dim); font-size:13px; margin-top:4px;" id="srvSub">ACTIVE SESSION</div>
       </div>
-      <div class="tabs">
-        <button class="tab active" id="tabConsole" onclick="switchTab('console')">Terminal Output</button>
-        <button class="tab" id="tabFiles" onclick="switchTab('files')">System Storage</button>
+      <div class="tab-group">
+        <div class="tab active" id="tabConsole" onclick="switchTab('console')">CONSOLE</div>
+        <div class="tab" id="tabFiles" onclick="switchTab('files')">FILE SYSTEM</div>
       </div>
     </div>
 
-    <div class="panel" id="viewConsole">
-      <div class="grid-2">
-        <div class="console-wrapper">
-          <div class="console-header">bash — terminal</div>
-          <div class="console" id="logOut">Initializing secure connection...</div>
+    <div id="viewConsole">
+      <div class="manager-layout">
+        <div class="console-box">
+          <div class="console-nav">
+            <div class="dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+            <span>STDOUT STREAM</span>
+            <span>UTF-8</span>
+          </div>
+          <div class="console-out" id="logOut">INITIALIZING VIRTUAL ENVIRONMENT...</div>
         </div>
 
-        <div class="side">
-          <button id="btnStart" class="btn btn-block btn-primary" onclick="srvAction('start')">EXECUTE</button>
-          <button class="btn btn-block" onclick="srvAction('restart')">REBOOT</button>
-          <button class="btn btn-block btn-danger" onclick="srvAction('stop')">HALT</button>
+        <div class="side-panel">
+          <button id="btnStart" class="btn btn-primary" style="width:100%; height:50px; font-size:14px;"
+            onclick="srvAction('start')">EXECUTE</button>
+          <button class="btn" style="width:100%; padding:14px;" onclick="srvAction('restart')">REBOOT</button>
+          <button class="btn btn-danger" style="width:100%; padding:14px;" onclick="srvAction('stop')">HALT</button>
 
-          <div style="height: 12px;"></div>
+          <div class="side-card">
+            <div class="stat-row">
+              <div class="ico-box">⚡</div>
+              <div class="stat-val"><span class="stat-label">STATUS</span><span class="stat-num"
+                  id="statusTxt">OFFLINE</span></div>
+            </div>
+            <div class="stat-row">
+              <div class="ico-box">💾</div>
+              <div class="stat-val"><span class="stat-label">MEMORY</span><span class="stat-num" id="memTxt">0.0
+                  MB</span></div>
+            </div>
+            <div class="stat-row">
+              <div class="ico-box">🌐</div>
+              <div class="stat-val"><span class="stat-label">IP ADDRESS</span><span class="stat-num"
+                  id="ipTxt">0.0.0.0</span></div>
+            </div>
+          </div>
 
-          <div class="stat">
-            <div class="ico">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div class="stat-content"><small>STATE</small><b id="statusTxt">Offline</b></div>
-          </div>
-          <div class="stat">
-            <div class="ico">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
-                <path d="M9 9h6v6H9z" />
-                <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
-              </svg>
-            </div>
-            <div class="stat-content"><small>MEMORY</small><b id="memTxt">0 MB</b></div>
-          </div>
-          <div class="stat">
-            <div class="ico">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M4 17L10 11 4 5" />
-                <path d="M12 19H20" />
-              </svg>
-            </div>
-            <div class="stat-content"><small>ENTRYPOINT</small><b id="mainFileTxt" onclick="changeStartup()">Click to
-                assign</b></div>
-          </div>
-          <div class="stat">
-            <div class="ico">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M2 12h20" />
-                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-              </svg>
-            </div>
-            <div class="stat-content"><small>ADDRESS</small><b id="ipTxt">0.0.0.0</b></div>
+          <div class="side-card">
+            <div class="stat-label" style="margin-bottom:8px;">PROTOCOL ENTRYPOINT</div>
+            <div
+              style="font-family:var(--mono); font-size:13px; color:var(--primary); cursor:pointer; text-decoration:underline"
+              onclick="changeStartup()" id="mainFileTxt">NOT SET</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="panel" id="viewFiles" style="display:none">
-      <div class="fm-top">
-        <div class="path-container">
-          <div class="path-label">Storage Volume</div>
-          <div class="path" id="pathBar"></div>
-        </div>
-        <div class="actions">
-          <button id="btnBack" class="btn btn-mini" onclick="goUp()" style="display:none">⬅ Return</button>
-          <button class="btn btn-mini" onclick="newFolder()">+ Directory</button>
-          <button class="btn btn-mini btn-primary" onclick="document.getElementById('uplFiles').click()">Upload
-            File</button>
-          <button class="btn btn-mini" onclick="document.getElementById('uplFolder').click()">Upload Bundle</button>
+    <div id="viewFiles" style="display:none" class="file-manager">
+      <div class="fm-header">
+        <div class="fm-path" id="pathBar"></div>
+        <div class="nav-actions">
+          <button id="btnBack" class="btn" style="display:none" onclick="goUp()">BACK</button>
+          <button class="btn" onclick="newFolder()">+ DIR</button>
+          <button class="btn btn-primary" onclick="document.getElementById('uplFiles').click()">UPLOAD</button>
+          <button class="btn" onclick="document.getElementById('uplFolder').click()">BUNDLE</button>
         </div>
       </div>
-
       <input type="file" id="uplFiles" multiple hidden onchange="doUploadFiles(this)">
       <input type="file" id="uplFolder" webkitdirectory directory multiple hidden onchange="doUploadFolder(this)">
-
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Entity</th>
-              <th>Size</th>
-              <th>Protocols</th>
-            </tr>
-          </thead>
-          <tbody id="fileList"></tbody>
-        </table>
-      </div>
+      <table class="fm-table">
+        <thead>
+          <tr>
+            <th>ENTITY NAME</th>
+            <th style="width:120px">SIZE</th>
+            <th style="width:280px">PROTOCOLS</th>
+          </tr>
+        </thead>
+        <tbody id="fileList"></tbody>
+      </table>
     </div>
   </div>
 
-  <div id="editor-modal">
-    <div class="editor">
-      <div class="editor-top">
-        <div class="fn" id="ed-title">file</div>
-        <div class="actions">
-          <button class="btn btn-primary" onclick="saveFile()">Write to Disk</button>
-          <button class="btn" onclick="closeEditor()">Close Editor</button>
-        </div>
+  <div id="editor-view">
+    <div class="editor-top">
+      <div style="font-family:var(--mono); font-weight:600" id="ed-title">ENTITY</div>
+      <div class="nav-actions">
+        <button class="btn btn-primary" onclick="saveFile()">WRITE TO DISK</button>
+        <button class="btn" onclick="closeEditor()">CLOSE</button>
       </div>
-      <textarea id="ed-area" spellcheck="false"></textarea>
     </div>
+    <textarea class="editor-area" id="ed-area" spellcheck="false"></textarea>
   </div>
 
-  <div id="modalBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <h3 id="mTitle">Title</h3>
-      <input id="mIn" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-      <div class="modal-actions">
-        <button class="btn" onclick="closeM()">Abort</button>
-        <button id="mConfirm" class="btn btn-primary">Proceed</button>
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="mTitle">ACTION</h3>
+      <input id="mIn" autocomplete="off" spellcheck="false">
+      <div class="nav-actions" style="justify-content:flex-end">
+        <button class="btn" onclick="closeM()">ABORT</button>
+        <button id="mConfirm" class="btn btn-primary">PROCEED</button>
       </div>
     </div>
   </div>
@@ -873,75 +765,60 @@
   <script>
     let currentSrv = null, poll = null, currentFile = null, currentPath = '';
 
-    function isAuthPage() { return location.pathname.startsWith('/login') || location.pathname.startsWith('/create'); }
-    function safeRedirect(url) { if (!isAuthPage()) location.href = url; }
-
-    function statusClass(st) {
-      st = (st || '').toLowerCase();
-      if (st === 'running') return 'running';
-      if (st === 'installing' || st === 'starting') return 'installing';
-      if (st === 'banned') return 'banned';
-      return 'offline';
-    }
+    function escapeHtml(s) { return (s || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+    function escapeAttr(s) { return escapeHtml(s).replace(/\\/g, "\\\\"); }
 
     async function loadPythonHost() {
-      const ipTxt = document.getElementById('pyHostTxt');
+      const addr = document.getElementById('sysAddr');
       try {
         const r = await fetch('/servers');
-        if (r.redirected) { safeRedirect(r.url); return; }
+        if (r.redirected) { location.href = r.url; return; }
         const d = await r.json();
-        const port = location.port || 5000;
-        if (!d.servers || d.servers.length === 0) { ipTxt.textContent = `sys.addr: ${location.hostname}:${port}`; return; }
+        const port = location.port || (location.protocol === 'https:' ? 443 : 80);
+        if (!d.servers || d.servers.length === 0) { addr.textContent = `${location.hostname}:${port}`; return; }
         const key = d.servers[0].key || d.servers[0].folder;
         const s = await fetch(`/server/stats/${encodeURIComponent(key)}`);
-        if (s.redirected) { safeRedirect(s.url); return; }
         const sd = await s.json();
-        const ip = sd.ip || location.hostname;
-        ipTxt.textContent = `sys.addr: ${ip}:${port}`;
-      } catch (e) {
-        const port = location.port || 5000;
-        ipTxt.textContent = `sys.addr: ${location.hostname}:${port}`;
-      }
+        addr.textContent = `${sd.ip || location.hostname}:${port}`;
+      } catch (e) { addr.textContent = `${location.hostname}:EXT`; }
     }
 
     async function loadServers() {
       const r = await fetch('/servers');
-      if (r.redirected) { safeRedirect(r.url); return; }
+      if (r.redirected) { location.href = r.url; return; }
       const d = await r.json();
       const cont = document.getElementById('cardsContainer');
       cont.innerHTML = '';
-      fetch('/admin').then(res => { if (!res.redirected && res.status === 200) document.getElementById('adminBtn').style.display = 'inline-block'; }).catch(() => { });
+
+      fetch('/admin').then(res => { if (!res.redirected && res.status === 200) document.getElementById('adminBtn').style.display = 'inline-flex'; });
 
       (d.servers || []).forEach(s => {
-        s.key = s.key || s.folder;
         const div = document.createElement('div');
         div.className = 'card';
-        const cls = statusClass(s.status);
-        const label = (s.status || 'Offline').toUpperCase();
+        const st = (s.status || 'Offline').toLowerCase();
+        const cls = st === 'running' ? 'running' : (st === 'installing' || st === 'starting' ? 'installing' : (s.banned ? 'error' : ''));
 
         div.innerHTML = `
-        <div>
-          <div class="srv-title">${escapeHtml(s.title)}</div>
-          <div class="srv-sub">${escapeHtml(s.subtitle || '')}</div>
-        </div>
-        <div class="pill ${cls}"><span class="dot"></span>${label}</div>
-      `;
+          <div>
+            <div class="srv-name">${escapeHtml(s.title)}</div>
+            <div class="srv-meta">${escapeHtml(s.subtitle || 'NO PROTOCOL')}</div>
+          </div>
+          <div class="status-pill ${cls}"><span class="dot"></span>${st.toUpperCase()}</div>
+        `;
         div.onclick = () => openServer(s);
         cont.appendChild(div);
       });
     }
 
     function openServer(s) {
-      currentSrv = s; currentPath = '';
+      currentSrv = s;
       document.getElementById('homeView').style.display = 'none';
       document.getElementById('serverView').style.display = 'block';
-      document.getElementById('homeBtn').style.display = 'inline-block';
+      document.getElementById('homeBtn').style.display = 'inline-flex';
       document.getElementById('newBtn').style.display = 'none';
-      document.getElementById('delSrvBtn').style.display = 'inline-block';
-
-      document.getElementById('srvHeader').textContent = s.title;
-      document.getElementById('srvSub').textContent = s.subtitle || 'Container node verified';
-      document.getElementById('mainFileTxt').textContent = s.startup_file || "Not assigned";
+      document.getElementById('delBtn').style.display = 'inline-flex';
+      document.getElementById('srvHeader').textContent = s.title.toUpperCase();
+      document.getElementById('mainFileTxt').textContent = s.startup_file || "NOT SET";
       switchTab('console');
     }
 
@@ -949,8 +826,8 @@
       document.getElementById('homeView').style.display = 'block';
       document.getElementById('serverView').style.display = 'none';
       document.getElementById('homeBtn').style.display = 'none';
-      document.getElementById('delSrvBtn').style.display = 'none';
-      document.getElementById('newBtn').style.display = 'inline-block';
+      document.getElementById('delBtn').style.display = 'none';
+      document.getElementById('newBtn').style.display = 'inline-flex';
       clearInterval(poll); loadServers();
     }
 
@@ -959,202 +836,102 @@
       document.getElementById('tabFiles').classList.toggle('active', t === 'files');
       document.getElementById('viewConsole').style.display = t === 'console' ? 'block' : 'none';
       document.getElementById('viewFiles').style.display = t === 'files' ? 'block' : 'none';
-
-      if (t === 'console') startPolling();
-      else { clearInterval(poll); loadFiles(); }
+      if (t === 'console') startPolling(); else { clearInterval(poll); loadFiles(); }
     }
 
     async function startPolling() {
       if (poll) clearInterval(poll);
       const fn = async () => {
         try {
-          const r = await fetch(`/server/stats/${encodeURIComponent(currentSrv.key)}`);
-          if (r.redirected) { safeRedirect(r.url); return; }
+          const r = await fetch(`/server/stats/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`);
           const d = await r.json();
-
-          document.getElementById('logOut').textContent = d.logs || "Connection established. Awaiting stream...";
-          document.getElementById('statusTxt').textContent = d.status || 'Offline';
-          document.getElementById('memTxt').textContent = d.mem || '0 MB';
-          document.getElementById('ipTxt').textContent = d.ip || '';
-
-          const running = (d.status === "Running" || d.status === "Installing" || d.status === "Starting");
+          document.getElementById('logOut').textContent = d.logs || "ESTABLISHING VIRTUAL LINK...";
+          document.getElementById('statusTxt').textContent = (d.status || 'OFFLINE').toUpperCase();
+          document.getElementById('memTxt').textContent = d.mem || '0.0 MB';
+          document.getElementById('ipTxt').textContent = d.ip || '0.0.0.0';
+          const running = ['running', 'installing', 'starting'].includes(d.status.toLowerCase());
           document.getElementById('btnStart').disabled = running;
-          if (running) document.getElementById('btnStart').style.opacity = 0.5;
-          else document.getElementById('btnStart').style.opacity = 1;
-
-          const lo = document.getElementById('logOut');
-          lo.scrollTop = lo.scrollHeight;
+          document.getElementById('btnStart').style.opacity = running ? 0.5 : 1;
+          const lo = document.getElementById('logOut'); lo.scrollTop = lo.scrollHeight;
         } catch (e) { }
       };
       fn(); poll = setInterval(fn, 2000);
     }
 
-    async function srvAction(act) { await fetch(`/server/action/${encodeURIComponent(currentSrv.key)}/${act}`, { method: 'POST' }); }
-
-    function changeStartup() {
-      openM("Assign Entrypoint (e.g., bot.py)", currentSrv.startup_file || "", async (v) => {
-        await fetch(`/server/set-startup/${encodeURIComponent(currentSrv.key)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: v })
-        });
-        currentSrv.startup_file = v;
-        document.getElementById('mainFileTxt').textContent = v || "Not assigned";
-        closeM();
-      });
-    }
+    async function srvAction(act) { await fetch(`/server/action/${encodeURIComponent(currentSrv.key || currentSrv.folder)}/${act}`, { method: 'POST' }); }
 
     async function loadFiles() {
-      const r = await fetch(`/files/list/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`);
-      if (r.redirected) { safeRedirect(r.url); return; }
+      const r = await fetch(`/files/list/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?path=${encodeURIComponent(currentPath)}`);
       const data = await r.json();
-      if (!data.success) { currentPath = ''; return loadFiles(); }
+      document.getElementById("btnBack").style.display = currentPath ? "inline-flex" : "none";
 
-      document.getElementById("btnBack").style.display = (currentPath && currentPath.length > 0) ? "inline-block" : "none";
-
-      const parts = (data.path || '').split('/').filter(Boolean);
+      let crumbs = [`<span class="crumb"><a href="#" onclick="jumpPath('')">ROOT</a></span>`];
       let acc = '';
-      const crumbs = [`<span class="crumb"><a href="javascript:void(0)" onclick="jumpPath('')">~</a></span>`];
-      for (const p of parts) {
+      (data.path || '').split('/').filter(Boolean).forEach(p => {
         acc = acc ? (acc + '/' + p) : p;
-        crumbs.push(`<span class="sep">/</span><span class="crumb"><a href="javascript:void(0)" onclick="jumpPath('${escapeAttr(acc)}')">${escapeHtml(p)}</a></span>`);
-      }
+        crumbs.push('<span style="opacity:0.3"> / </span>' + `<span class="crumb"><a href="#" onclick="jumpPath('${escapeAttr(acc)}')">${escapeHtml(p)}</a></span>`);
+      });
       document.getElementById('pathBar').innerHTML = crumbs.join('');
 
-      const rows = [];
-      for (const d of (data.dirs || [])) {
-        const name = d.name;
-        rows.push(`
-        <tr>
-          <td><span class="name-link" onclick="openFolder('${escapeAttr(name)}')">📁 ${escapeHtml(name)}</span></td>
-          <td style="color:var(--muted)">DIR</td>
-          <td class="actions">
-            <button class="btn btn-mini" onclick="openFolder('${escapeAttr(name)}')">Open</button>
-            <button class="btn btn-mini" onclick="renameDir('${escapeAttr(name)}')">Rename</button>
-            <button class="btn btn-mini btn-danger" onclick="deleteDir('${escapeAttr(name)}')">Delete</button>
-          </td>
-        </tr>
-      `);
-      }
-      for (const f of (data.files || [])) {
-        const relFile = currentPath ? `${currentPath}/${f.name}` : f.name;
-        rows.push(`
-        <tr>
-          <td><span class="name-link" onclick="openEditor('${escapeAttr(relFile)}')">📄 ${escapeHtml(f.name)}</span></td>
-          <td style="font-family:var(--mono); font-size:12px;">${escapeHtml(f.size || '')}</td>
-          <td class="actions">
-            <button class="btn btn-mini" onclick="renameFilePrompt('${escapeAttr(f.name)}')">Rename</button>
-            <button class="btn btn-mini btn-danger" onclick="deleteFilePrompt('${escapeAttr(f.name)}')">Delete</button>
-          </td>
-        </tr>
-      `);
-      }
-      document.getElementById('fileList').innerHTML = rows.join('');
+      let html = '';
+      (data.dirs || []).forEach(d => {
+        html += `<tr><td><div class="fm-name" onclick="openFolder('${escapeAttr(d.name)}')">📁 ${escapeHtml(d.name)}</div></td><td style="color:var(--text-dim)">DIR</td><td>
+          <div class="nav-actions"><button class="btn" style="padding:4px 8px" onclick="renameDir('${escapeAttr(d.name)}')">RENAME</button>
+          <button class="btn btn-danger" style="padding:4px 8px" onclick="deleteDir('${escapeAttr(d.name)}')">DEL</button></div></td></tr>`;
+      });
+      (data.files || []).forEach(f => {
+        const rel = currentPath ? `${currentPath}/${f.name}` : f.name;
+        html += `<tr><td><div class="fm-name" onclick="openEditor('${escapeAttr(rel)}')">📄 ${escapeHtml(f.name)}</div></td><td style="font-family:var(--mono);font-size:12px">${f.size}</td><td>
+          <div class="nav-actions"><button class="btn" style="padding:4px 8px" onclick="renameFilePrompt('${escapeAttr(f.name)}')">RENAME</button>
+          <button class="btn btn-danger" style="padding:4px 8px" onclick="deleteFilePrompt('${escapeAttr(f.name)}')">DEL</button></div></td></tr>`;
+      });
+      document.getElementById('fileList').innerHTML = html;
     }
 
     function openFolder(name) { currentPath = currentPath ? (currentPath + '/' + name) : name; loadFiles(); }
-    function jumpPath(p) { currentPath = p || ''; loadFiles(); }
-    function goUp() {
-      if (!currentPath) return;
-      const parts = currentPath.split('/').filter(Boolean); parts.pop();
-      currentPath = parts.join('/'); loadFiles();
-    }
+    function jumpPath(p) { currentPath = p; loadFiles(); }
+    function goUp() { let p = currentPath.split('/'); p.pop(); currentPath = p.join('/'); loadFiles(); }
 
-    function newFolder() {
-      openM("Initialize Directory", "", async (v) => {
-        await fetch(`/files/mkdir/${encodeURIComponent(currentSrv.key)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name: v })
-        });
-        loadFiles(); closeM();
-      });
-    }
-    function renameDir(oldName) {
-      openM("Move / Rename Directory", oldName, async (v) => {
-        await fetch(`/files/rename/${encodeURIComponent(currentSrv.key)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: oldName, new: v })
-        });
-        loadFiles(); closeM();
-      });
-    }
-    async function deleteDir(name) {
-      if (!confirm(`Verify deletion protocol on directory '${name}'? This action cannot be reversed.`)) return;
-      await fetch(`/files/delete/${encodeURIComponent(currentSrv.key)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name, kind: 'dir' })
-      });
-      loadFiles();
-    }
-    function renameFilePrompt(oldName) {
-      openM("Move / Rename File", oldName, async (v) => {
-        await fetch(`/files/rename/${encodeURIComponent(currentSrv.key)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: oldName, new: v })
-        });
-        loadFiles(); closeM();
-      });
-    }
-    async function deleteFilePrompt(name) {
-      if (!confirm(`Verify deletion protocol on file '${name}'?`)) return;
-      await fetch(`/files/delete/${encodeURIComponent(currentSrv.key)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name, kind: 'file' })
-      });
-      loadFiles();
-    }
-    async function doUploadFiles(input) {
-      if (!input.files || !input.files.length) return;
-      const fd = new FormData();
-      for (const f of input.files) fd.append("files", f);
-      await fetch(`/files/upload/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd });
-      input.value = ""; loadFiles();
-    }
-    async function doUploadFolder(input) {
-      if (!input.files || !input.files.length) return;
-      const fd = new FormData();
-      for (const f of input.files) { fd.append("files", f); fd.append("relpaths", f.webkitRelativePath || f.name); }
-      await fetch(`/files/upload/${encodeURIComponent(currentSrv.key)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd });
-      input.value = ""; loadFiles();
-    }
     async function openEditor(name) {
-      currentFile = name; document.getElementById('ed-title').textContent = name;
-      const res = await fetch(`/files/content/${encodeURIComponent(currentSrv.key)}?file=${encodeURIComponent(name)}`);
-      if (res.redirected) { safeRedirect(res.url); return; }
-      const data = await res.json();
-      document.getElementById('ed-area').value = data.content || '';
-      document.getElementById('editor-modal').style.display = 'block';
+      currentFile = name; document.getElementById('ed-title').textContent = name.toUpperCase();
+      const res = await fetch(`/files/content/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?file=${encodeURIComponent(name)}`);
+      const d = await res.json();
+      document.getElementById('ed-area').value = d.content || '';
+      document.getElementById('editor-view').style.display = 'flex';
     }
+    function closeEditor() { document.getElementById('editor-view').style.display = 'none'; }
     async function saveFile() {
-      await fetch(`/files/save/${encodeURIComponent(currentSrv.key)}`, {
+      await fetch(`/files/save/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file: currentFile, content: document.getElementById('ed-area').value })
       });
-      alert("Write success ✅");
+      alert("BLOCK WRITTEN ✅");
     }
-    async function deleteServer() {
-      if (!currentSrv || !confirm(`Verify purging protocol on '${currentSrv.title}'? All data will be destroyed.`)) return;
-      const res = await fetch(`/server/delete/${encodeURIComponent(currentSrv.key)}`, { method: 'POST' });
-      if (res.ok) { goHome(); } else { alert("Purge request failed."); }
-    }
-
-    function closeEditor() { document.getElementById('editor-modal').style.display = 'none'; }
 
     function openM(t, v, cb) {
-      document.getElementById('modalBackdrop').style.display = 'flex';
-      document.getElementById('mTitle').textContent = t;
-      document.getElementById('mIn').value = v || "";
+      document.getElementById('modalOverlay').style.display = 'flex';
+      document.getElementById('mTitle').textContent = t.toUpperCase();
+      document.getElementById('mIn').value = v || '';
       document.getElementById('mConfirm').onclick = () => cb(document.getElementById('mIn').value);
-      document.getElementById('mIn').focus();
     }
-    function closeM() { document.getElementById('modalBackdrop').style.display = 'none'; }
+    function closeM() { document.getElementById('modalOverlay').style.display = 'none'; }
 
-    document.getElementById('newBtn').onclick = () => openM("Initialize Node (Alias)", "", async (v) => {
-      const res = await fetch('/add', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: v })
-      });
-      const d = await res.json().catch(() => ({ success: false, message: 'Error during initialization' }));
-      if (!d.success) { alert(d.message || 'Initialization Failed'); return; }
-      closeM(); loadServers(); loadPythonHost();
+    async function renameDir(n) { openM("Rename Directory", n, async v => { await fetch(`/files/rename/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: n, new: v }) }); loadFiles(); closeM(); }); }
+    async function deleteDir(n) { if (confirm(`PURGE DIRECTORY '${n}'?`)) { await fetch(`/files/delete/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name: n, kind: 'dir' }) }); loadFiles(); } }
+    async function renameFilePrompt(n) { openM("Rename File", n, async v => { await fetch(`/files/rename/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, old: n, new: v }) }); loadFiles(); closeM(); }); }
+    async function deleteFilePrompt(n) { if (confirm(`PURGE FILE '${n}'?`)) { await fetch(`/files/delete/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: currentPath, name: n, kind: 'file' }) }); loadFiles(); } }
+
+    async function doUploadFiles(inp) { let fd = new FormData(); for (let f of inp.files) fd.append("files", f); await fetch(`/files/upload/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd }); loadFiles(); }
+    async function doUploadFolder(inp) { let fd = new FormData(); for (let f of inp.files) { fd.append("files", f); fd.append("relpaths", f.webkitRelativePath || f.name); } await fetch(`/files/upload/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd }); loadFiles(); }
+
+    async function changeStartup() { openM("Set Entrypoint", currentSrv.startup_file, async v => { await fetch(`/server/set-startup/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: v }) }); currentSrv.startup_file = v; document.getElementById('mainFileTxt').textContent = v; closeM(); }); }
+    async function deleteServer() { if (confirm("ABSOLUTE DATA DESTRUCTION?")) { await fetch(`/server/delete/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST' }); goHome(); } }
+
+    document.getElementById('newBtn').onclick = () => openM("INIT NEW ENGINE", "", async v => {
+      const r = await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: v }) });
+      const d = await r.json();
+      if (d.success) { closeM(); loadServers(); } else alert(d.message);
     });
-
-    function escapeHtml(s) {
-      return (s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", "&#039;");
-    }
-    function escapeAttr(s) { return escapeHtml(s).replaceAll("\\", "\\\\"); }
 
     document.addEventListener('DOMContentLoaded', () => { loadServers(); loadPythonHost(); });
   </script>
