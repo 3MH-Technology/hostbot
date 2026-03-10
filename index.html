@@ -88,18 +88,12 @@
       cursor: pointer;
     }
 
-    .logo {
-      font-size: 28px;
+    .logo-img {
       width: 44px;
       height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
     }
 
     .title-box {
@@ -272,6 +266,7 @@
       line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -725,7 +720,7 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="brand" onclick="goHome()" role="button" tabindex="0">
-        <div class="logo"></div>
+        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
         <div class="title-box">
           <div class="title">الذئب الابيض</div>
           <span class="sub" id="pyHostTxt">Connecting...</span>

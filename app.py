@@ -13,6 +13,7 @@ import requests
 import psutil
 from flask import Flask, send_from_directory, request, jsonify, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +26,14 @@ os.makedirs(USERS_ROOT, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("PANEL_SECRET_KEY", "CHANGE_ME_" + os.urandom(16).hex())
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+app.secret_key = os.environ.get("PANEL_SECRET_KEY", "CHANGE_ME_STABLE_KEY_123")
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=True,
+    PERMANENT_SESSION_LIFETIME=604800 # 1 week
+)
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
 # If the environment variable is not set, we use the default password, 
@@ -432,6 +440,7 @@ def api_login():
 
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         session["user"] = {"username": ADMIN_USERNAME, "is_admin": True}
+        session.permanent = True
         return jsonify({"success": True, "is_admin": True})
 
     db = load_users()
@@ -444,6 +453,7 @@ def api_login():
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
     session["user"] = {"username": u.get("username"), "is_admin": False}
+    session.permanent = True
     ensure_user_dirs(u.get("username"))
     return jsonify({"success": True, "is_admin": False})
 

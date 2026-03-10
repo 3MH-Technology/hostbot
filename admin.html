@@ -52,7 +52,15 @@
       z-index: 100;
     }
 
-    .logo {
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+    }
+
+    .logo-text {
       font-weight: 700;
       font-size: 18px;
       letter-spacing: -0.5px;
@@ -61,7 +69,7 @@
       gap: 8px;
     }
 
-    .logo span {
+    .logo-text span {
       color: var(--muted);
       font-weight: 400;
       font-size: 13px;
@@ -290,7 +298,10 @@
 
 <body>
   <div class="top">
-    <div class="logo">الذئب الابيض <span>CENTRAL COMMAND</span></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
+      <div class="logo-text">الذئب الابيض <span>CENTRAL COMMAND</span></div>
+    </div>
     <div style="display:flex;gap:12px;">
       <button class="btn" onclick="location.href='/'">Operative Dashboard</button>
       <button class="btn btn-danger" onclick="location.href='/logout'">Terminate Session</button>

@@ -74,13 +74,32 @@
       text-align: center;
     }
 
-    .logo {
-      font-size: 42px;
-      margin-bottom: 16px;
-      display: inline-block;
-      background: linear-gradient(135deg, #fff, #a1a1a6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .logo-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 24px;
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+      }
+
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 35px rgba(10, 132, 255, 0.6);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+      }
     }
 
     .title {
@@ -160,16 +179,6 @@
       transform: translateY(1px);
     }
 
-    .btn-secondary {
-      background: transparent;
-      color: var(--primary);
-      border: 1px solid transparent;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(10, 132, 255, 0.1);
-    }
-
     .msg {
       margin-top: 16px;
       color: var(--muted);
@@ -188,11 +197,8 @@
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo">
-        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
+      <div class="branding">
+        <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="الذئب الابيض" class="logo-img">
       </div>
       <div class="title">الذئب الابيض</div>
       <div class="sub">Central Intelligence Node<br>Authorized Personnel Only</div>
@@ -224,7 +230,9 @@
       if (!r.ok || !d.success) { m.style.color = "var(--error)"; m.textContent = d.message || 'Authentication failed'; return; }
       m.style.color = "#32D74B";
       m.textContent = 'Access Granted.';
-      setTimeout(() => location.href = d.is_admin ? '/admin' : '/', 500);
+      setTimeout(() => {
+        window.location.href = d.is_admin ? './admin' : './';
+      }, 500);
     }
   </script>
 </body>
