@@ -1,75 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>استضافة الذئب</title>
+    <title>استضافة الذئب | أقوى منصة لبوتات التلجرام</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
         :root {
             --bg: #050505;
-            --card-bg: rgba(15, 15, 20, 0.7);
+            --card-bg: rgba(20, 20, 25, 0.7);
             --primary: #0A84FF;
             --primary-glow: rgba(10, 132, 255, 0.4);
             --accent: #5E5CE6;
             --text: #FFFFFF;
             --text-muted: #8E8E93;
             --border: rgba(255, 255, 255, 0.08);
+            --success: #32D74B;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Tajawal', sans-serif;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            min-height: 100vh;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        body::before {
-            content: '';
+        /* Moving background glows */
+        .glow-orb {
             position: absolute;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
-            top: -30vw;
-            left: -30vw;
+            border-radius: 50%;
+            filter: blur(120px);
             z-index: -1;
-            filter: blur(100px);
-            opacity: 0.7;
+            opacity: 0.5;
+            animation: float 15s infinite alternate;
         }
 
-        body::after {
-            content: '';
-            position: absolute;
+        .orb-1 {
+            top: -20%;
+            right: -10%;
             width: 50vw;
             height: 50vw;
-            background: radial-gradient(circle, rgba(94, 92, 230, 0.2) 0%, transparent 60%);
-            bottom: -25vw;
-            right: -25vw;
-            z-index: -1;
-            filter: blur(100px);
-            opacity: 0.7;
+            background: var(--primary-glow);
+        }
+
+        .orb-2 {
+            bottom: -20%;
+            left: -10%;
+            width: 40vw;
+            height: 40vw;
+            background: rgba(94, 92, 230, 0.2);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(5%, 5%) scale(1.1);
+            }
         }
 
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 5%;
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background: rgba(5, 5, 5, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .brand {
@@ -77,20 +91,29 @@
             align-items: center;
             gap: 12px;
             font-weight: 800;
-            font-size: 20px;
+            font-size: 24px;
+            color: var(--text);
+            text-decoration: none;
         }
 
         .brand img {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
         }
 
         .nav-links a {
             color: var(--text);
             text-decoration: none;
-            font-weight: 600;
-            margin-left: 24px;
+            font-weight: 700;
+            font-size: 16px;
             transition: color 0.3s;
         }
 
@@ -102,242 +125,525 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 14px;
             font-weight: 700;
+            font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn:hover {
             background: #0071E3;
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
+            color: white;
         }
 
-        .hero {
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+        }
+
+        header {
             text-align: center;
-            padding: 100px 20px;
-            max-width: 900px;
+            padding: 180px 20px 100px;
+            max-width: 1000px;
             margin: 0 auto;
+            position: relative;
         }
 
-        .hero h1 {
-            font-size: 64px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
+        h1 {
+            font-size: 72px;
+            font-weight: 900;
             margin-bottom: 24px;
-            line-height: 1.1;
+            line-height: 1.2;
             background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .hero p {
-            font-size: 20px;
+        header p {
+            font-size: 22px;
             color: var(--text-muted);
-            margin-bottom: 40px;
+            margin-bottom: 48px;
+            line-height: 1.7;
+            max-width: 800px;
+            margin-inline: auto;
+        }
+
+        .header-btns {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        section {
+            padding: 100px 5%;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .sec-title {
+            text-align: center;
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .sec-desc {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-inline: auto;
             line-height: 1.6;
         }
 
-        .features {
+        .grid-3 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            padding: 40px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
         }
 
-        .feature-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            backdrop-filter: blur(20px);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-icon {
-            font-size: 32px;
-            margin-bottom: 16px;
-            display: inline-block;
-        }
-
-        .feature-card h3 {
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-
-        .feature-card p {
-            color: var(--text-muted);
-            line-height: 1.5;
-            font-size: 15px;
-        }
-
-        .pricing {
-            padding: 80px 5%;
-            text-align: center;
-        }
-
-        .pricing h2 {
-            font-size: 40px;
-            margin-bottom: 48px;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 32px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .price-card {
+        .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 28px;
             padding: 40px;
+            backdrop-filter: blur(20px);
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .price-card h3 {
-            font-size: 24px;
-            margin-bottom: 8px;
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .price-card .price {
-            font-size: 48px;
-            font-weight: 800;
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: rgba(10, 132, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
             margin-bottom: 24px;
+            color: var(--primary);
+            border: 1px solid rgba(10, 132, 255, 0.2);
         }
 
-        .price-card .price span {
+        .card h3 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* Stats Banner */
+        .stats {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            padding: 60px 5%;
+            border-radius: 32px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+            text-align: center;
+            margin-block: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item h4 {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .stat-item p {
+            font-size: 18px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Workflow preview */
+        .dashboard-preview {
+            width: 100%;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            display: block;
+            margin: -40px auto 100px;
+            position: relative;
+            z-index: 10;
+            max-width: 1000px;
+        }
+
+        /* Pricing */
+        .pricing-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-tag {
+            font-size: 56px;
+            font-weight: 900;
+            margin: 24px 0;
+            color: var(--text);
+        }
+
+        .price-tag span {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .pkg-lst {
+            list-style: none;
+            margin-bottom: 40px;
+            flex-grow: 1;
+        }
+
+        .pkg-lst li {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
             font-size: 16px;
             color: var(--text-muted);
-            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .price-card ul {
-            list-style: none;
-            text-align: left;
-            margin-bottom: 32px;
+        .pkg-lst li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 900;
+            font-size: 18px;
         }
 
-        .price-card ul li {
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-
-        .price-card ul li:last-child {
+        .pkg-lst li:last-child {
             border: none;
         }
 
-        .footer {
-            text-align: center;
-            padding: 40px;
-            border-top: 1px solid var(--border);
-            margin-top: 80px;
-            color: var(--text-muted);
+        .pro-card {
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(10, 132, 255, 0.15);
+            transform: scale(1.03);
         }
 
-        /* Security Protocol */
-        ::selection {
-            background: var(--primary);
+        .pro-card .icon-box {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            background: rgba(30, 30, 35, 0.8);
+        }
+
+        .faq-q {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-a {
+            color: var(--text-muted);
+            margin-top: 16px;
+            line-height: 1.7;
+            font-size: 16px;
+            display: none;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 80px 5% 40px;
+            background: rgba(10, 10, 15, 0.5);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+            margin-bottom: 60px;
+        }
+
+        .footer-col h4 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .footer-col p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            max-width: 300px;
+        }
+
+        .footer-col a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 16px;
+            transition: color 0.3s;
+            font-size: 15px;
+        }
+
+        .footer-col a:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+            padding-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            h1 {
+                font-size: 48px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .pro-card {
+                transform: scale(1);
+            }
+
+            .copyright {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
     <nav>
-        <div class="brand">
+        <a href="/" class="brand">
             <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo">
             استضافة الذئب
-        </div>
+        </a>
         <div class="nav-links">
-            <a href="#features">المميزات</a>
-            <a href="#pricing">الخطط</a>
-            <a href="/developer">المطور</a>
-            <a href="/login" class="btn" style="margin-left: 24px;">تسجيل الدخول</a>
+            <a href="#features">التقنيات</a>
+            <a href="#pricing">الباقات</a>
+            <a href="/features-info">المميزات الشاملة</a>
+            <a href="/docs">مركز المساعدة</a>
+            <a href="/developer">عن المطور</a>
+        </div>
+        <div>
+            <a href="/login" class="btn">ابدأ الآن — مجاناً</a>
         </div>
     </nav>
 
-    <section class="hero">
-        <h1>أقوى استضافة لبوتات التلجرام</h1>
-        <p>استضافة الذئب توفر لجيل جديد من المطورين بيئة تشغيل فائقة السرعة، آمنة، ومستقرة لبوتات بايثون الخاصة بهم
-            بضغطة زر وبدون تعقيدات.</p>
-        <a href="/login" class="btn" style="font-size: 18px; padding: 16px 36px; border-radius: 20px;">ابدأ الآن
-            مجاناً</a>
-    </section>
+    <header>
+        <h1>المحرك الأقوى لتشغيل <br>بوتات التلجرام.</h1>
+        <p>صُممت استضافة الذئب خصيصاً للمطورين المحترفين لتشغيل بوتات بايثون بأعلى درجات الاستقرار والسرعة والعزل الأمني
+            الكامل. قم بإدارة سيرفرك بضغطة زر وبدون سطر أوامر واحد.</p>
+        <div class="header-btns">
+            <a href="/login" class="btn" style="padding: 16px 40px; font-size: 18px; border-radius: 20px;">إنشاء حساب
+                جديد</a>
+            <a href="/docs" class="btn btn-secondary"
+                style="padding: 16px 40px; font-size: 18px; border-radius: 20px;">تصفح الدليل</a>
+        </div>
+    </header>
 
-    <section id="features" class="features">
-        <div class="feature-card">
-            <span class="feature-icon">⚡</span>
-            <h3>أداء فائق</h3>
-            <p>تعمل خوادمنا بأحدث تقنيات المعالجة وتعتمد على شبكات اتصال فائقة السرعة مع سيرفرات جوجل وتلجرام لضمان عدم
-                تأخر أي رسالة.</p>
-        </div>
-        <div class="feature-card">
-            <span class="feature-icon">🛡️</span>
-            <h3>حماية مطلقة</h3>
-            <p>نظام أمني متكامل يحمي ملفاتك البرمجية، بالإضافة إلى عزل كامل لكل مستخدم لتجنب أي تداخل في العمليات.</p>
-        </div>
-        <div class="feature-card">
-            <span class="feature-icon">🔄</span>
-            <h3>تشغيل تلقائي</h3>
-            <p>نظام مراقبة ذاتي يقوم بإعادة تشغيل بوتك فوراً في حال توقفه لأي سبب لضمان بقائه متصلاً على مدار الساعة.
-            </p>
-        </div>
-    </section>
+    <section id="features">
+        <div class="sec-title">تقنيات استثنائية لمشروعك</div>
+        <div class="sec-desc">بُنيت بنيتنا التحتية لتوفير كل ما تحتاجه لإبقاء مشاريع البرمجية تعمل بكفاءة على مدار 24
+            ساعة دون تدخل منك.</div>
 
-    <section id="pricing" class="pricing">
-        <h2>خطط تناسب طموحك</h2>
-        <div class="pricing-grid">
-            <div class="price-card">
-                <h3>المجانية (Free)</h3>
-                <div class="price">$0<span>/للأبد</span></div>
-                <ul>
-                    <li>✅ عدد 1 بوت</li>
-                    <li>✅ 256MB ذاكرة تشغيل الـ RAM</li>
-                    <li>✅ 50MB مساحة تخزين للملفات</li>
-                    <li>✅ دعم مجتمعي</li>
-                </ul>
-                <a href="/login" class="btn" style="width: 100%; background: rgba(255,255,255,0.1);">إنشاء حساب</a>
+        <div class="grid-3">
+            <div class="card">
+                <div class="icon-box">⚡</div>
+                <h3>أوتو ريكفري (Auto-Recovery)</h3>
+                <p>مراقب ذكي يقوم بفحص البوت تلقائياً، وإذا توقف أو واجه خطأ يتم إعادة تشغيله خلال ثوانٍ معدودة بدون
+                    تدخل يدوي.</p>
             </div>
-            <div class="price-card" style="border-color: var(--primary); transform: scale(1.05);">
-                <h3 style="color: var(--primary);">الباقة الاحترافية (Pro)</h3>
-                <div class="price">$5<span>/شهرياً</span></div>
-                <ul>
-                    <li>✅ عدد 5 بوتات</li>
-                    <li>✅ 512MB ذاكرة تشغيل الـ RAM</li>
-                    <li>✅ 500MB مساحة تخزين للملفات</li>
-                    <li>✅ دعم فني سريع عبر التلجرام</li>
-                </ul>
-                <a href="/login" class="btn" style="width: 100%;">اشترك الآن</a>
+            <div class="card">
+                <div class="icon-box">🛡️</div>
+                <h3>حاويات معزولة بالكامل</h3>
+                <p>يتم حجز موارد الـ CPU والـ RAM لكل مستخدم في حاويات معزولة تمنع تداخل الملفات وتحمي الشفرة المصدرية
+                    من أي وصول غير مصرح.</p>
+            </div>
+            <div class="card">
+                <div class="icon-box">📦</div>
+                <h3>إدارة تلقائية للمكتبات</h3>
+                <p>لا تشغل بالك بتثبيت المكتبات، النظام يكتشف نقص لـ PIP ويقوم بتثبيت الحزم المفقودة بمجرد بدء السيرفر
+                    لتسريع عملية التنفيذ.</p>
             </div>
         </div>
     </section>
 
-    <div class="footer">
-        استضافة الذئب (White Wolf Protocol) الإصدار 0.1 <br>
-        جميع الحقوق محفوظة © 2026<br><br>
-        تطوير: @j49_c
-    </div>
+    <section>
+        <div class="stats">
+            <div class="stat-item">
+                <h4>100%</h4>
+                <p>وقت تشغيل مستقر</p>
+            </div>
+            <div class="stat-item">
+                <h4>600ms</h4>
+                <p>سرعة الاتصال بالتلجرام</p>
+            </div>
+            <div class="stat-item">
+                <h4>+Secure</h4>
+                <p>تشفير عسكري للبيانات</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="sec-title">استثمار يرفع من جودة عملك</div>
+        <div class="sec-desc">اختر الخطة التي تطابق احتياجاتك، تستطيع الترقية في أي وقت من لوحة التحكم. الأسعار شفافة
+            ولا توجد رسوم خفية.</div>
+
+        <div class="grid-3" style="max-width: 1000px; margin: 0 auto;">
+            <div class="card pricing-card">
+                <div class="icon-box"
+                    style="color:var(--success); border-color: rgba(50,215,75,0.2); background: rgba(50,215,75,0.1)">🟢
+                </div>
+                <h3>بيئة الانطلاق (Free)</h3>
+                <p>مثالية للبوتات الشخصية ومشاريع التخرج.</p>
+                <div class="price-tag">$0 <span>/ دائماً</span></div>
+                <ul class="pkg-lst">
+                    <li>1 سيرفر بوت مستقل</li>
+                    <li>256MB ذاكرة الوصول (RAM)</li>
+                    <li>50MB سعة التخزين (NVMe)</li>
+                    <li>إعادة تشغيل تلقائي</li>
+                </ul>
+                <a href="/login" class="btn btn-secondary" style="width: 100%">سجل مجاناً</a>
+            </div>
+
+            <div class="card pricing-card pro-card">
+                <div class="icon-box">🛸</div>
+                <h3>الاحترافية (Pro)</h3>
+                <p>للأعمال والمشاريع الكبيرة ذات الترافيك العالي.</p>
+                <div class="price-tag">$5 <span>/ شهرياً</span></div>
+                <ul class="pkg-lst">
+                    <li>5 سيرفرات بوت مستقلة</li>
+                    <li>512MB ذاكرة الوصول (RAM) لكل سيرفر</li>
+                    <li>500MB سعة التخزين (NVMe)</li>
+                    <li>أولوية التوصيل والموارد المخصصة</li>
+                    <li>دعم فني خاص على التلجرام</li>
+                </ul>
+                <a href="/login" class="btn" style="width: 100%">اشترك الآن</a>
+            </div>
+        </div>
+    </section>
+
+    <section style="max-width: 900px;">
+        <div class="sec-title">الأسئلة الشائعة</div>
+        <br>
+        <div class="faq-item"
+            onclick="this.querySelector('.faq-a').style.display = this.querySelector('.faq-a').style.display === 'block' ? 'none' : 'block'">
+            <div class="faq-q">هل يمكنني تشغيل بوتات مكتوبة بلغات أخرى؟ <span>+</span></div>
+            <div class="faq-a">في الوقت الحالي استضافة الذئب مخصصة بشكل كامل ومحسن لبيئة تشغيل Python بجميع مكتباتها مثل
+                Telethon, Pyrogram المحسنة للإصدار 3.11.</div>
+        </div>
+        <div class="faq-item"
+            onclick="this.querySelector('.faq-a').style.display = this.querySelector('.faq-a').style.display === 'block' ? 'none' : 'block'">
+            <div class="faq-q">كيف يتم رفع ملفات البوت للمنصة؟ <span>+</span></div>
+            <div class="faq-a">نقدم لك مدير ملفات File Explorer احترافي ومدمج، يمكنك سحب وإفلات كامل المجلدات بضغطة زر
+                وسيقوم الخادم برفعها وتجهيزها مباشرة.</div>
+        </div>
+        <div class="faq-item"
+            onclick="this.querySelector('.faq-a').style.display = this.querySelector('.faq-a').style.display === 'block' ? 'none' : 'block'">
+            <div class="faq-q">هل بيانات بوتاتي آمنة من السرقة؟ <span>+</span></div>
+            <div class="faq-a">بكل تأكيد. جميع الملفات مخفية ولا يمكن الوصول إليها إلا عبر حسابك المحمي بالتشفير. لا يحق
+                لأي أطراف ثالثة فحص مجلداتك الخاصة.</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <a href="/" class="brand" style="margin-bottom: 24px;">
+                    <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo">
+                    استضافة الذئب
+                </a>
+                <p>نحن المنصة الرائدة عربياً في تقديم حلول استضافة سحابية مخصصة للذكاء الاصطناعي وبوتات بايثون بأعلى
+                    معايير الأمان لتلبية احتياجات المطورين.</p>
+            </div>
+            <div class="footer-col">
+                <h4>الروابط السريعة</h4>
+                <a href="/login">تسجيل الدخول / إنشاء حساب</a>
+                <a href="/features-info">استكشاف الميزات</a>
+                <a href="#pricing">باقات الاشتراك</a>
+            </div>
+            <div class="footer-col">
+                <h4>الموارد</h4>
+                <a href="/docs">الدليل الشامل للتوصيل</a>
+                <a href="/developer">المدير التنفيذي والمطور</a>
+                <a href="https://t.me/j49_c" target="_blank">خدمة العملاء الفورية</a>
+            </div>
+            <div class="footer-col">
+                <h4>الشؤون القانونية</h4>
+                <a href="/terms">شروط وأحكام الاستخدام</a>
+                <a href="/privacy">سياسة الخصوصية والأمان</a>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <span>© 2026 جميع الحقوق محفوظة لمنصة استضافة الذئب.</span>
+            <span>مُصمم ومُطور بواسطة المطور محمد (White Wolf Protocol v0.1)</span>
+        </div>
+    </footer>
 
     <script>
-        // SECURITY PROTOCOLS
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function (e) {
-            if (e.keyCode == 123) return false;
-            if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
-            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(String.fromCharCode(e.keyCode))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false;
         };
         setInterval(() => { const s = performance.now(); debugger; if (performance.now() - s > 100) window.location.href = "about:blank"; }, 500);
     </script>

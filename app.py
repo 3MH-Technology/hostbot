@@ -510,7 +510,26 @@ def dashboard():
 
 @app.route("/developer")
 def developer_page():
+    dev_url = os.environ.get("DEVELOPER_URL")
+    if dev_url:
+        return redirect(dev_url)
     return send_from_directory(BASE_DIR, "developer.html")
+
+@app.route("/terms")
+def terms_page():
+    return send_from_directory(BASE_DIR, "terms.html")
+
+@app.route("/privacy")
+def privacy_page():
+    return send_from_directory(BASE_DIR, "privacy.html")
+
+@app.route("/features-info")
+def features_page():
+    return send_from_directory(BASE_DIR, "features.html")
+
+@app.route("/docs")
+def docs_page():
+    return send_from_directory(BASE_DIR, "docs.html")
 
 
 @app.route("/login")
