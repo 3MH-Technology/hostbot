@@ -169,9 +169,9 @@ def current_username():
 
 
 PLANS = {
-    "free": {"label": "Free", "max_bots": 1, "max_mem_mb": 256},
-    "pro": {"label": "Pro", "max_bots": 5, "max_mem_mb": 512},
-    "enterprise": {"label": "Enterprise", "max_bots": 50, "max_mem_mb": 1024},
+    "free": {"label": "Free", "max_bots": 1, "max_mem_mb": 256, "max_disk_mb": 50},
+    "pro": {"label": "Pro", "max_bots": 5, "max_mem_mb": 512, "max_disk_mb": 500},
+    "enterprise": {"label": "Enterprise", "max_bots": 50, "max_mem_mb": 1024, "max_disk_mb": 5000},
 }
 
 
@@ -196,6 +196,24 @@ def get_user_mem_limit(username: str) -> int:
         return MAX_PROCESS_MEMORY_MB
     plan = get_user_plan(username)
     return plan["max_mem_mb"]
+
+
+def get_user_disk_limit(username: str) -> int:
+    if is_admin_session():
+        return 999999
+    plan = get_user_plan(username)
+    return plan.get("max_disk_mb", 50)
+
+
+def get_dir_size(path='.'):
+    total = 0
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_file() and not entry.is_symlink():
+                total += entry.stat().st_size
+            elif entry.is_dir() and not entry.is_symlink():
+                total += get_dir_size(entry.path)
+    return total
 
 
 def login_required(fn):
@@ -480,9 +498,19 @@ def stop_proc(key: str):
 
 
 @app.route("/")
-@login_required
 def home():
+    if not session.get("user"):
+        return send_from_directory(BASE_DIR, "landing.html")
+    return redirect("/dashboard")
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
     return send_from_directory(BASE_DIR, "index.html")
+
+@app.route("/developer")
+def developer_page():
+    return send_from_directory(BASE_DIR, "developer.html")
 
 
 @app.route("/login")
@@ -962,6 +990,16 @@ def file_save(key):
     except Exception:
         return jsonify({"success": False, "message": "Invalid path"}), 400
 
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+    
+    current_size_mb = get_dir_size(server_dir) / 1024 / 1024
+    disk_limit_mb = get_user_disk_limit(owner)
+    
+    # We estimate size based on length of content
+    if current_size_mb + (len(content.encode('utf-8')) / 1024 / 1024) > disk_limit_mb:
+        return jsonify({"success": False, "message": f"Disk limit exceeded ({disk_limit_mb}MB max)"}), 403
+
     os.makedirs(os.path.dirname(full), exist_ok=True)
     try:
         with open(full, "w", encoding="utf-8") as f:
@@ -1046,6 +1084,11 @@ def file_upload(key):
         return jsonify({"success": False, "message": "Invalid path"}), 400
     os.makedirs(base_dir, exist_ok=True)
 
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+    current_size_mb = get_dir_size(server_dir) / 1024 / 1024
+    disk_limit_mb = get_user_disk_limit(owner)
+
     files = request.files.getlist("files") or []
     if not files:
         one = request.files.get("file")
@@ -1073,6 +1116,15 @@ def file_upload(key):
                 target_dir = base_dir
         except Exception:
             continue
+
+        f.seek(0, os.SEEK_END)
+        file_length = f.tell()
+        f.seek(0)
+        
+        if current_size_mb + (file_length / 1024 / 1024) > disk_limit_mb:
+            continue
+            
+        current_size_mb += file_length / 1024 / 1024
 
         os.makedirs(target_dir, exist_ok=True)
         f.save(os.path.join(target_dir, filename))

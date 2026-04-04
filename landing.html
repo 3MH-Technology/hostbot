@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>استضافة الذئب</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #050505;
+            --card-bg: rgba(15, 15, 20, 0.7);
+            --primary: #0A84FF;
+            --primary-glow: rgba(10, 132, 255, 0.4);
+            --accent: #5E5CE6;
+            --text: #FFFFFF;
+            --text-muted: #8E8E93;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
+            top: -30vw;
+            left: -30vw;
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.7;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(94, 92, 230, 0.2) 0%, transparent 60%);
+            bottom: -25vw;
+            right: -25vw;
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.7;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 5%;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 24px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #0071E3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 24px;
+            line-height: 1.1;
+            background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .pricing {
+            padding: 80px 5%;
+            text-align: center;
+        }
+
+        .pricing h2 {
+            font-size: 40px;
+            margin-bottom: 48px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px;
+        }
+
+        .price-card h3 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .price-card .price {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .price-card .price span {
+            font-size: 16px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .price-card ul {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .price-card ul li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .price-card ul li:last-child {
+            border: none;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            color: var(--text-muted);
+        }
+
+        /* Security Protocol */
+        ::selection {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="brand">
+            <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo">
+            استضافة الذئب
+        </div>
+        <div class="nav-links">
+            <a href="#features">المميزات</a>
+            <a href="#pricing">الخطط</a>
+            <a href="/developer">المطور</a>
+            <a href="/login" class="btn" style="margin-left: 24px;">تسجيل الدخول</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>أقوى استضافة لبوتات التلجرام</h1>
+        <p>استضافة الذئب توفر لجيل جديد من المطورين بيئة تشغيل فائقة السرعة، آمنة، ومستقرة لبوتات بايثون الخاصة بهم
+            بضغطة زر وبدون تعقيدات.</p>
+        <a href="/login" class="btn" style="font-size: 18px; padding: 16px 36px; border-radius: 20px;">ابدأ الآن
+            مجاناً</a>
+    </section>
+
+    <section id="features" class="features">
+        <div class="feature-card">
+            <span class="feature-icon">⚡</span>
+            <h3>أداء فائق</h3>
+            <p>تعمل خوادمنا بأحدث تقنيات المعالجة وتعتمد على شبكات اتصال فائقة السرعة مع سيرفرات جوجل وتلجرام لضمان عدم
+                تأخر أي رسالة.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🛡️</span>
+            <h3>حماية مطلقة</h3>
+            <p>نظام أمني متكامل يحمي ملفاتك البرمجية، بالإضافة إلى عزل كامل لكل مستخدم لتجنب أي تداخل في العمليات.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🔄</span>
+            <h3>تشغيل تلقائي</h3>
+            <p>نظام مراقبة ذاتي يقوم بإعادة تشغيل بوتك فوراً في حال توقفه لأي سبب لضمان بقائه متصلاً على مدار الساعة.
+            </p>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <h2>خطط تناسب طموحك</h2>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3>المجانية (Free)</h3>
+                <div class="price">$0<span>/للأبد</span></div>
+                <ul>
+                    <li>✅ عدد 1 بوت</li>
+                    <li>✅ 256MB ذاكرة تشغيل الـ RAM</li>
+                    <li>✅ 50MB مساحة تخزين للملفات</li>
+                    <li>✅ دعم مجتمعي</li>
+                </ul>
+                <a href="/login" class="btn" style="width: 100%; background: rgba(255,255,255,0.1);">إنشاء حساب</a>
+            </div>
+            <div class="price-card" style="border-color: var(--primary); transform: scale(1.05);">
+                <h3 style="color: var(--primary);">الباقة الاحترافية (Pro)</h3>
+                <div class="price">$5<span>/شهرياً</span></div>
+                <ul>
+                    <li>✅ عدد 5 بوتات</li>
+                    <li>✅ 512MB ذاكرة تشغيل الـ RAM</li>
+                    <li>✅ 500MB مساحة تخزين للملفات</li>
+                    <li>✅ دعم فني سريع عبر التلجرام</li>
+                </ul>
+                <a href="/login" class="btn" style="width: 100%;">اشترك الآن</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        استضافة الذئب (White Wolf Protocol) الإصدار 0.1 <br>
+        جميع الحقوق محفوظة © 2026<br><br>
+        تطوير: @j49_c
+    </div>
+
+    <script>
+        // SECURITY PROTOCOLS
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function (e) {
+            if (e.keyCode == 123) return false;
+            if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        };
+        setInterval(() => { const s = performance.now(); debugger; if (performance.now() - s > 100) window.location.href = "about:blank"; }, 500);
+    </script>
+</body>
+
+</html>
