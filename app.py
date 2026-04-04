@@ -1182,23 +1182,26 @@ signal.signal(signal.SIGTERM, graceful_shutdown)
 signal.signal(signal.SIGINT, graceful_shutdown)
 
 if __name__ == "__main__":
+    port = int(os.environ.get("SERVER_PORT", 7860))
+    logger.info(f"--- SYSTEM INITIALIZATION: Port {port} ---")
+    
+    # Start background tasks
     threading.Thread(target=run_keep_alive, daemon=True).start()
     threading.Thread(target=run_log_cleaner, daemon=True).start()
-    port = int(os.environ.get("SERVER_PORT", 30170))
-    logger.info(f"Starting server on port {port}")
+    
     try:
         from gunicorn.app.wsgiapp import run as gunicorn_run
+        logger.info("Launching Production WSGI Engine (Gunicorn)...")
         sys.argv = [
             'gunicorn',
             '--bind', f'0.0.0.0:{port}',
             '--worker-class', 'gthread',
             '--workers', '1',
             '--threads', '8',
-            '--timeout', '120',
-            '--preload',
+            '--timeout', '600',
             'app:app'
         ]
         gunicorn_run()
-    except ImportError:
-        logger.info("Gunicorn not found, using Flask dev server")
-        app.run(host="0.0.0.0", port=port)
+    except Exception as e:
+        logger.error(f"Gunicorn failed: {e}. Falling back to development server.")
+        app.run(host="0.0.0.0", port=port, threaded=True)
