@@ -715,6 +715,18 @@
   </div>
 
   <div class="container" id="homeView">
+    <div class="billing-panel" id="billingPanel"
+      style="display:none; padding: 24px; border-radius: 20px; border: 1px solid var(--border); background: rgba(50,215,75,0.05); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h3 style="margin-bottom: 8px;">مرحباً <span id="pName" style="color:var(--text)"></span></h3>
+        <p style="color:var(--text-muted); font-size:14px; font-family: var(--mono);">PLAN: <strong id="pPlan"></strong>
+          | LIMIT: <span id="pBots"></span> BOTS / <span id="pMem"></span> RAM</p>
+      </div>
+      <div>
+        <button class="btn" style="background:var(--primary); padding: 12px 24px;"
+          onclick="window.open('https://t.me/j49_c', '_blank')">ترقية الاشتراك و الموارد</button>
+      </div>
+    </div>
     <div class="grid" id="cardsContainer"></div>
   </div>
 
@@ -843,6 +855,16 @@
       cont.innerHTML = '';
 
       fetch('/admin').then(res => { if (!res.redirected && res.status === 200) document.getElementById('adminBtn').style.display = 'inline-flex'; });
+
+      fetch('/api/user/profile').then(res => res.json()).then(data => {
+        if (data.success) {
+          document.getElementById('billingPanel').style.display = 'flex';
+          document.getElementById('pName').textContent = data.username.toUpperCase();
+          document.getElementById('pPlan').textContent = data.plan_label.toUpperCase();
+          document.getElementById('pBots').textContent = data.max_bots;
+          document.getElementById('pMem').textContent = data.max_mem_mb + 'MB';
+        }
+      });
 
       (d.servers || []).forEach(s => {
         const div = document.createElement('div');

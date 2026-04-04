@@ -582,12 +582,54 @@ def api_login():
     return jsonify({"success": True, "is_admin": False})
 
 
-@app.route("/api/auth/register", methods=["POST"])
+import smtplib
+from email.message import EmailMessage
+import random
+
+OTP_STORAGE = {}
+
+def get_client_ip():
+    if request.headers.get('X-Forwarded-For'):
+        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    return request.remote_addr or ""
+
+def send_otp_email(to_email, code):
+    server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+    port = int(os.environ.get("SMTP_PORT", "587"))
+    user = os.environ.get("SMTP_USER", "")
+    password = os.environ.get("SMTP_PASS", "")
+
+    if not user or not password:
+        logger.warning(f"SMTP not configured. Sent OTP {code} to {to_email} (Simulated)")
+        return True
+
+    msg = EmailMessage()
+    msg.set_content(f"مرحباً بك في استضافة الذئب.\n\nكود التحقق الخاص بك هو: {code}\n\nيرجى عدم مشاركة هذا الكود مع أحد.")
+    msg['Subject'] = "كود التحقق - استضافة الذئب"
+    msg['From'] = f"White Wolf Protocol <{user}>"
+    msg['To'] = to_email
+
+    try:
+        with smtplib.SMTP(server, port) as s:
+            s.starttls()
+            s.login(user, password)
+            s.send_message(msg)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send email: {e}")
+        return False
+
+
+@app.route("/api/auth/register-otp", methods=["POST"])
 @rate_limited
-def api_register():
+def api_register_otp():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
+    email = (data.get("email") or "").strip()
+
+    if not email or '@' not in email:
+         return jsonify({"success": False, "message": "البريد الإلكتروني غير صالح"}), 400
 
     if len(username) < 3 or len(username) > 20:
         return jsonify({"success": False, "message": "Username must be 3-20 characters"}), 400
@@ -598,24 +640,75 @@ def api_register():
     if username.lower() == ADMIN_USERNAME.lower():
         return jsonify({"success": False, "message": "Username not available"}), 400
 
+    client_ip = get_client_ip()
     db = load_users()
+    
+    # IP CHECK
+    if client_ip:
+        for u in db.get("users", []):
+            if u.get("ip") == client_ip:
+                return jsonify({"success": False, "message": "لقد قمت مسبقاً بإنشاء حساب من هذا الجهاز"}), 403
+
+    if find_user(db, username):
+        return jsonify({"success": False, "message": "Username already taken"}), 409
+
+    for u in db.get("users", []):
+        if u.get("email") == email:
+            return jsonify({"success": False, "message": "Email already in use"}), 409
+
+    otp = str(random.randint(100000, 999999))
+    OTP_STORAGE[email] = {
+        "otp": otp,
+        "username": username,
+        "password": password,
+        "ip": client_ip,
+        "time": time.time()
+    }
+
+    if send_otp_email(email, otp):
+        return jsonify({"success": True, "message": "تم إرسال كود التحقق"}), 200
+    else:
+        return jsonify({"success": False, "message": "فشل في إرسال البريد الإلكتروني"}), 500
+
+
+@app.route("/api/auth/register-verify", methods=["POST"])
+@rate_limited
+def api_register_verify():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip()
+    otp = (data.get("code") or "").strip()
+    
+    record = OTP_STORAGE.get(email)
+    if not record or record["otp"] != otp:
+        return jsonify({"success": False, "message": "كود التحقق خاطئ أو منتهي الصلاحية"}), 400
+        
+    if time.time() - record["time"] > 600:
+        return jsonify({"success": False, "message": "كود التحقق منتهي الصلاحية"}), 400
+        
+    db = load_users()
+    username = record["username"]
+    
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
     new_user = {
         "username": username,
-        "password_hash": generate_password_hash(password),
+        "email": email,
+        "password_hash": generate_password_hash(record["password"]),
         "active": True,
         "plan": "free",
+        "ip": record["ip"],
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     db.setdefault("users", []).append(new_user)
     save_users(db)
 
+    del OTP_STORAGE[email]
+
     session["user"] = {"username": username, "is_admin": False}
     session.permanent = True
     ensure_user_dirs(username)
-    logger.info(f"New user registered: {username}")
+    logger.info(f"New user registered: {username} from IP: {record['ip']}")
     return jsonify({"success": True})
 
 
