@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN printf "nameserver 8.8.8.8\nnameserver 8.8.4.4\nnameserver 1.1.1.1\n" > /etc/resolv.conf && \
-    chmod 666 /etc/resolv.conf
 
 RUN useradd -m -u 1000 user
 USER user
