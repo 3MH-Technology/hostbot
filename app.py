@@ -8,13 +8,24 @@ import subprocess
 import threading
 import time
 import sys
+import signal
+import logging
 import requests
 
+import dns_fix
 import psutil
 from flask import Flask, send_from_directory, request, jsonify, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
+from collections import defaultdict
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('hostbot')
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,14 +43,36 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='None',
     SESSION_COOKIE_SECURE=True,
-    PERMANENT_SESSION_LIFETIME=604800 # 1 week
+    PERMANENT_SESSION_LIFETIME=604800,
+    MAX_CONTENT_LENGTH=50 * 1024 * 1024
 )
+
+_rate_store = defaultdict(list)
+_rate_lock = threading.Lock()
+RATE_LIMIT = 120
+RATE_WINDOW = 60
+
+
+def rate_limited(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        ip = request.remote_addr or '0.0.0.0'
+        now = time.time()
+        with _rate_lock:
+            _rate_store[ip] = [t for t in _rate_store[ip] if now - t < RATE_WINDOW]
+            if len(_rate_store[ip]) >= RATE_LIMIT:
+                return jsonify({"success": False, "message": "Rate limit exceeded"}), 429
+            _rate_store[ip].append(now)
+        return fn(*args, **kwargs)
+    return wrapper
 
 @app.after_request
 def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return response
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
@@ -47,6 +80,9 @@ ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
 # but it's better to store a hash or use a secret key.
 # For maximum privacy, we will allow the admin password to be an environment variable.
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASS", "Mm@123456")
+
+MAX_PROCESS_MEMORY_MB = int(os.environ.get("MAX_PROC_MEM_MB", 512))
+MAX_LOG_SIZE = 2 * 1024 * 1024
 
 running_procs = {}
 server_states = {}
@@ -329,9 +365,23 @@ def ensure_requirements_installed(owner: str, folder: str):
         return False
 
 
+def get_subprocess_env():
+    env = os.environ.copy()
+    env['PYTHONUNBUFFERED'] = '1'
+    env['PYTHONDONTWRITEBYTECODE'] = '1'
+    return env
+
+
 def start_with_autoinstall(owner: str, folder: str, startup_file: str):
-    wrapper_code = r'''
-import runpy, sys, subprocess, traceback, re, os
+    dns_fix_path = os.path.join(BASE_DIR, 'dns_fix.py')
+    wrapper_code = f'''
+import sys, os
+sys.path.insert(0, "{BASE_DIR}")
+try:
+    import dns_fix
+except:
+    pass
+import runpy, subprocess, traceback, re
 script = sys.argv[1]
 cwd = os.getcwd()
 
@@ -344,7 +394,7 @@ def append_installed(pkg):
                 existing = set([x.strip() for x in f.read().splitlines() if x.strip()])
         if pkg and pkg not in existing:
             with open(p, "a", encoding="utf-8") as f:
-                f.write(pkg + "\n")
+                f.write(pkg + "\\n")
     except:
         pass
 
@@ -352,7 +402,7 @@ def parse_missing_name(e):
     n = getattr(e, "name", None)
     if n: return n
     s = str(e)
-    m = re.search(r"No module named '([^']+)'", s)
+    m = re.search(r"No module named \'([^\']+)\'", s)
     if m: return m.group(1)
     return None
 
@@ -365,14 +415,14 @@ while True:
         if not pkg:
             traceback.print_exc()
             break
-        print(f"[AUTO-INSTALL] Missing module: {pkg} -> installing...")
+        print(f"[AUTO-INSTALL] Missing module: {{pkg}} -> installing...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
             append_installed(pkg)
-            print(f"[AUTO-INSTALL] Installed: {pkg} ✅ -> restarting...")
+            print(f"[AUTO-INSTALL] Installed: {{pkg}} -> restarting...")
             continue
         except Exception as ex:
-            print(f"[AUTO-INSTALL] Failed: {ex}")
+            print(f"[AUTO-INSTALL] Failed: {{ex}}")
             traceback.print_exc()
             break
     except Exception:
@@ -388,6 +438,7 @@ while True:
         cwd=server_dir,
         stdout=log_file,
         stderr=log_file,
+        env=get_subprocess_env(),
     )
     return proc, log_file
 
@@ -1013,42 +1064,141 @@ def admin_quickstats():
 
 
 def run_keep_alive():
-    """Background thread to keep the server awake and monitor bots."""
     port = int(os.environ.get("SERVER_PORT", 30170))
-    url = f"http://127.0.0.1:{port}/"
-    
-    print(f"[*] Starting Keep-Alive and Auto-Recovery system...")
-    
+    url = f"http://127.0.0.1:{port}/health"
+    logger.info("Keep-Alive and Auto-Recovery system started")
     while True:
         try:
-            # 1. Self-ping to prevent sleep
             requests.get(url, timeout=10)
-            
-            # 2. Check and recover crashed bots (Auto-Recovery)
-            # This is a basic safety mechanism to restart nodes if they die unexpectedly
             with lock:
+                for key in list(running_procs.keys()):
+                    proc, logf = running_procs[key]
+                    if not psutil.pid_exists(proc.pid) or proc.poll() is not None:
+                        logger.info(f"Process dead for '{key}', cleaning up")
+                        try:
+                            logf.close()
+                        except Exception:
+                            pass
+                        running_procs.pop(key, None)
+                        server_states[key] = "Offline"
+                    else:
+                        try:
+                            p = psutil.Process(proc.pid)
+                            mem_mb = p.memory_info().rss / 1024 / 1024
+                            if mem_mb > MAX_PROCESS_MEMORY_MB:
+                                logger.warning(f"Process '{key}' using {mem_mb:.0f}MB, killing")
+                                for child in p.children(recursive=True):
+                                    child.kill()
+                                p.kill()
+                                running_procs.pop(key, None)
+                                server_states[key] = "Offline"
+                                log_append(key, f"[SYSTEM] Killed: memory limit exceeded ({mem_mb:.0f}MB)\n")
+                        except Exception:
+                            pass
                 for key, state in list(server_states.items()):
                     if state == "Running" and key not in running_procs:
-                        # Found a bot that should be running but the process is missing
-                        print(f"[!] Auto-Recovery: Restarting crashed node '{key}'")
+                        logger.info(f"Auto-Recovery: restarting '{key}'")
                         try:
-                            owner, folder = parse_server_key(key, allow_admin=True)
+                            owner, folder = key.split("::", 1) if "::" in key else (ADMIN_USERNAME, key)
                             meta = read_meta(owner, folder)
                             startup = meta.get("startup_file")
-                            if startup:
+                            if startup and not meta.get("banned", False):
                                 t = threading.Thread(target=background_start, args=(key, owner, folder, startup), daemon=True)
                                 t.start()
-                        except Exception as re:
-                            print(f"[!] Recovery failed for '{key}': {re}")
-                            
+                            else:
+                                server_states[key] = "Offline"
+                        except Exception as e:
+                            logger.error(f"Recovery failed for '{key}': {e}")
+                            server_states[key] = "Offline"
         except Exception as e:
-            print(f"[!] Keep-Alive Error: {e}")
-            
-        time.sleep(300) # Check every 5 minutes
+            logger.error(f"Keep-Alive Error: {e}")
+        time.sleep(300)
+
+
+def truncate_large_logs():
+    if not os.path.isdir(USERS_ROOT):
+        return
+    for owner in os.listdir(USERS_ROOT):
+        root = get_user_servers_root(owner)
+        if not os.path.isdir(root):
+            continue
+        for folder in os.listdir(root):
+            log_path = os.path.join(get_server_dir(owner, folder), "server.log")
+            try:
+                if os.path.exists(log_path) and os.path.getsize(log_path) > MAX_LOG_SIZE:
+                    with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        f.seek(os.path.getsize(log_path) - MAX_LOG_SIZE // 2)
+                        content = f.read()
+                    with open(log_path, 'w', encoding='utf-8') as f:
+                        f.write("[SYSTEM] Log truncated\n" + content)
+            except Exception:
+                pass
+
+
+def run_log_cleaner():
+    while True:
+        time.sleep(600)
+        truncate_large_logs()
+
+
+@app.route("/health")
+def health_check():
+    return jsonify({"status": "ok", "uptime": time.time()})
+
+
+@app.route("/api/system/status")
+@admin_required
+def system_status():
+    try:
+        cpu = psutil.cpu_percent(interval=0.5)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        procs = len(running_procs)
+        return jsonify({
+            "success": True,
+            "cpu_percent": cpu,
+            "memory_used_mb": round(mem.used / 1024 / 1024),
+            "memory_total_mb": round(mem.total / 1024 / 1024),
+            "memory_percent": mem.percent,
+            "disk_used_gb": round(disk.used / 1024 / 1024 / 1024, 1),
+            "disk_total_gb": round(disk.total / 1024 / 1024 / 1024, 1),
+            "disk_percent": round(disk.percent, 1),
+            "running_processes": procs
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+def graceful_shutdown(signum, frame):
+    logger.info("Shutting down gracefully...")
+    with lock:
+        for key in list(running_procs.keys()):
+            stop_proc(key)
+    logger.info("All processes stopped.")
+    sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, graceful_shutdown)
+signal.signal(signal.SIGINT, graceful_shutdown)
 
 if __name__ == "__main__":
-    # Start the safety/keep-alive thread
     threading.Thread(target=run_keep_alive, daemon=True).start()
-    
+    threading.Thread(target=run_log_cleaner, daemon=True).start()
     port = int(os.environ.get("SERVER_PORT", 30170))
-    app.run(host="0.0.0.0", port=port)
+    logger.info(f"Starting server on port {port}")
+    try:
+        from gunicorn.app.wsgiapp import run as gunicorn_run
+        sys.argv = [
+            'gunicorn',
+            '--bind', f'0.0.0.0:{port}',
+            '--worker-class', 'gthread',
+            '--workers', '1',
+            '--threads', '8',
+            '--timeout', '120',
+            '--preload',
+            'app:app'
+        ]
+        gunicorn_run()
+    except ImportError:
+        logger.info("Gunicorn not found, using Flask dev server")
+        app.run(host="0.0.0.0", port=port)

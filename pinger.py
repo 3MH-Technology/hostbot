@@ -1,22 +1,33 @@
 import requests
 import time
 import datetime
+import os
 
-# ضع الرابط الذي تريد زيارته هنا
-TARGET_URL = "http://127.0.0.1:30170" 
+SPACE_URL = os.environ.get("SPACE_URL", "")
+LOCAL_PORT = os.environ.get("SERVER_PORT", "7860")
+LOCAL_URL = f"http://127.0.0.1:{LOCAL_PORT}/health"
+
+TARGETS = [LOCAL_URL]
+if SPACE_URL:
+    TARGETS.append(SPACE_URL.rstrip("/") + "/health")
+
 
 def start_pinging():
-    print(f"[*] Starting keep-alive bot for: {TARGET_URL}")
+    print(f"[*] Keep-alive targets: {TARGETS}")
+    fail_count = 0
     while True:
-        try:
-            response = requests.get(TARGET_URL)
-            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{now}] Visited! Status Code: {response.status_code}")
-        except Exception as e:
-            print(f"[!] Error visiting site: {e}")
-        
-        # الانتظار لمدة 5 دقائق (300 ثانية)
-        time.sleep(300)
+        for url in TARGETS:
+            try:
+                r = requests.get(url, timeout=15)
+                now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{now}] {url} -> {r.status_code}")
+                fail_count = 0
+            except Exception as e:
+                fail_count += 1
+                print(f"[!] Error: {url} -> {e}")
+        sleep_time = 180 if fail_count == 0 else 60
+        time.sleep(sleep_time)
+
 
 if __name__ == "__main__":
     start_pinging()

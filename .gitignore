@@ -1,4 +1,7 @@
+.venv/
 __pycache__/
-USERS/
 *.pyc
+DATA/
+USERS/
+*.log
 .env

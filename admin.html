@@ -338,14 +338,15 @@
         <div class="stat-footer" id="u_active_stat">0 Active Accounts</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">System Health</div>
-        <div class="stat-value" style="color:var(--success)">OPTIMAL</div>
-        <div class="stat-footer">Handshake Latency: <span id="ping">...</span></div>
+        <div class="stat-label">CPU Usage</div>
+        <div class="stat-value" id="sys_cpu" style="color:var(--success)">0%</div>
+        <div class="stat-footer">RAM: <span id="sys_ram">0</span> MB / <span id="sys_ram_total">0</span> MB</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Quarantine</div>
-        <div class="stat-value" id="st_ban" style="color:var(--error)">0</div>
-        <div class="stat-footer">Restricted Access Nodes</div>
+        <div class="stat-label">System Health</div>
+        <div class="stat-value" id="sys_health" style="color:var(--success)">OPTIMAL</div>
+        <div class="stat-footer">Disk: <span id="sys_disk">0</span>% | Banned: <span id="st_ban"
+            style="color:var(--error)">0</span> | Ping: <span id="ping">...</span></div>
       </div>
     </div>
 
@@ -413,6 +414,25 @@
       document.getElementById('u_total').textContent = s.users_total || 0;
       document.getElementById('u_active_stat').textContent = `${s.users_active || 0} Active Accounts`;
       document.getElementById('ping').textContent = (Date.now() - startT) + 'ms';
+      try {
+        const sr = await fetch('/api/system/status');
+        const sd = await sr.json();
+        if (sd.success) {
+          document.getElementById('sys_cpu').textContent = sd.cpu_percent + '%';
+          document.getElementById('sys_cpu').style.color = sd.cpu_percent > 80 ? 'var(--error)' : sd.cpu_percent > 50 ? 'var(--warning)' : 'var(--success)';
+          document.getElementById('sys_ram').textContent = sd.memory_used_mb;
+          document.getElementById('sys_ram_total').textContent = sd.memory_total_mb;
+          document.getElementById('sys_disk').textContent = sd.disk_percent;
+          const health = document.getElementById('sys_health');
+          if (sd.cpu_percent > 85 || sd.memory_percent > 90) {
+            health.textContent = 'CRITICAL'; health.style.color = 'var(--error)';
+          } else if (sd.cpu_percent > 60 || sd.memory_percent > 70) {
+            health.textContent = 'MODERATE'; health.style.color = 'var(--warning)';
+          } else {
+            health.textContent = 'OPTIMAL'; health.style.color = 'var(--success)';
+          }
+        }
+      } catch (e) { }
     }
 
     async function refreshServers() {
