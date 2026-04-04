@@ -1114,50 +1114,7 @@ def admin_server_ban():
     return jsonify({"success": True})
 
 
-@app.route("/api/admin/users")
-@admin_required
-def admin_users():
-    db = load_users()
 
-    counts = {}
-    if os.path.isdir(USERS_ROOT):
-        for owner in os.listdir(USERS_ROOT):
-            root = get_user_servers_root(owner)
-            if os.path.isdir(root):
-                counts[owner] = len([d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))])
-
-    users = []
-    for u in db.get("users", []):
-        users.append({
-            "username": u.get("username"),
-            "email": u.get("email"),
-            "active": bool(u.get("active", True)),
-            "premium": bool(u.get("premium", False)),
-            "servers": counts.get(u.get("username") or "", 0),
-        })
-    return jsonify({"success": True, "users": users})
-
-
-@app.route("/api/admin/user/update", methods=["POST"])
-@admin_required
-def admin_user_update():
-    data = request.get_json(silent=True) or {}
-    username = (data.get("username") or "").strip()
-    if not username:
-        return jsonify({"success": False, "message": "Username required"}), 400
-
-    db = load_users()
-    u = find_user(db, username)
-    if not u:
-        return jsonify({"success": False, "message": "User not found"}), 404
-
-    if "active" in data:
-        u["active"] = bool(data["active"])
-    if "premium" in data:
-        u["premium"] = bool(data["premium"])
-
-    save_users(db)
-    return jsonify({"success": True})
 
 
 @app.route("/api/admin/quickstats")
