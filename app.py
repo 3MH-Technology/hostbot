@@ -70,9 +70,8 @@ def rate_limited(fn):
 def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    # Removed X-Frame-Options for Hugging Face Spaces compatibility
+    response.headers['Referrer-Policy'] = 'no-referrer-when-downgrade'
     return response
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
