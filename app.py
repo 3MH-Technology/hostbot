@@ -168,14 +168,34 @@ def current_username():
     return (u.get("username") or "").strip()
 
 
-def get_user_limit(username: str) -> int:
-    if is_admin_session():
-        return 999999
+PLANS = {
+    "free": {"label": "Free", "max_bots": 1, "max_mem_mb": 256},
+    "pro": {"label": "Pro", "max_bots": 5, "max_mem_mb": 512},
+    "enterprise": {"label": "Enterprise", "max_bots": 50, "max_mem_mb": 1024},
+}
+
+
+def get_user_plan(username: str) -> dict:
     db = load_users()
     u = find_user(db, username)
     if not u:
-        return 1
-    return 5 if u.get("premium", False) else 1
+        return PLANS["free"]
+    plan_name = u.get("plan", "free")
+    return PLANS.get(plan_name, PLANS["free"])
+
+
+def get_user_limit(username: str) -> int:
+    if is_admin_session():
+        return 999999
+    plan = get_user_plan(username)
+    return plan["max_bots"]
+
+
+def get_user_mem_limit(username: str) -> int:
+    if is_admin_session():
+        return MAX_PROCESS_MEMORY_MB
+    plan = get_user_plan(username)
+    return plan["max_mem_mb"]
 
 
 def login_required(fn):
@@ -515,9 +535,120 @@ def api_login():
     return jsonify({"success": True, "is_admin": False})
 
 
-@app.route("/api/auth/create", methods=["POST"])
-def api_create():
-    return jsonify({"success": False, "message": "Registration disabled. Personal use only."}), 403
+@app.route("/api/auth/register", methods=["POST"])
+@rate_limited
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = data.get("password") or ""
+
+    if len(username) < 3 or len(username) > 20:
+        return jsonify({"success": False, "message": "Username must be 3-20 characters"}), 400
+    if not re.match(r'^[A-Za-z0-9_]+$', username):
+        return jsonify({"success": False, "message": "Username: letters, numbers, underscore only"}), 400
+    if len(password) < 6:
+        return jsonify({"success": False, "message": "Password must be at least 6 characters"}), 400
+    if username.lower() == ADMIN_USERNAME.lower():
+        return jsonify({"success": False, "message": "Username not available"}), 400
+
+    db = load_users()
+    if find_user(db, username):
+        return jsonify({"success": False, "message": "Username already taken"}), 409
+
+    new_user = {
+        "username": username,
+        "password_hash": generate_password_hash(password),
+        "active": True,
+        "plan": "free",
+        "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    db.setdefault("users", []).append(new_user)
+    save_users(db)
+
+    session["user"] = {"username": username, "is_admin": False}
+    session.permanent = True
+    ensure_user_dirs(username)
+    logger.info(f"New user registered: {username}")
+    return jsonify({"success": True})
+
+
+@app.route("/api/user/profile")
+@login_required
+def api_user_profile():
+    username = current_username()
+    db = load_users()
+    u = find_user(db, username)
+    plan_name = "admin" if is_admin_session() else (u.get("plan", "free") if u else "free")
+    plan_info = PLANS.get(plan_name, PLANS["free"])
+    return jsonify({
+        "success": True,
+        "username": username,
+        "is_admin": is_admin_session(),
+        "plan": plan_name,
+        "plan_label": plan_info.get("label", plan_name.title()),
+        "max_bots": get_user_limit(username),
+        "max_mem_mb": get_user_mem_limit(username)
+    })
+
+
+@app.route("/api/admin/users")
+@admin_required
+def api_admin_users():
+    db = load_users()
+    users = []
+    for u in db.get("users", []):
+        users.append({
+            "username": u.get("username"),
+            "active": u.get("active", True),
+            "plan": u.get("plan", "free"),
+            "created_at": u.get("created_at", "unknown")
+        })
+    return jsonify({"success": True, "users": users})
+
+
+@app.route("/api/admin/user/set-plan", methods=["POST"])
+@admin_required
+def api_admin_set_plan():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    plan = (data.get("plan") or "free").strip()
+    if plan not in PLANS:
+        return jsonify({"success": False, "message": "Invalid plan"}), 400
+    db = load_users()
+    u = find_user(db, username)
+    if not u:
+        return jsonify({"success": False, "message": "User not found"}), 404
+    u["plan"] = plan
+    save_users(db)
+    return jsonify({"success": True})
+
+
+@app.route("/api/admin/user/toggle-active", methods=["POST"])
+@admin_required
+def api_admin_toggle_active():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    db = load_users()
+    u = find_user(db, username)
+    if not u:
+        return jsonify({"success": False, "message": "User not found"}), 404
+    u["active"] = not u.get("active", True)
+    save_users(db)
+    return jsonify({"success": True, "active": u["active"]})
+
+
+@app.route("/api/admin/user/delete", methods=["POST"])
+@admin_required
+def api_admin_delete_user():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    db = load_users()
+    u = find_user(db, username)
+    if not u:
+        return jsonify({"success": False, "message": "User not found"}), 404
+    db["users"] = [x for x in db.get("users", []) if (x.get("username") or "").strip().lower() != username.lower()]
+    save_users(db)
+    return jsonify({"success": True})
 
 
 def list_all_servers_for_admin():

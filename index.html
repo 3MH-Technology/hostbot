@@ -701,7 +701,7 @@
         <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="brand-logo">
         <div class="brand-info">
           <span class="brand-name">الذئب الابيض</span>
-          <span class="brand-status" id="sysAddr">CONNECTING...</span>
+          <span class="brand-status">v0.1 · SECURE</span>
         </div>
       </div>
       <div class="nav-actions">
@@ -833,20 +833,7 @@
     function escapeHtml(s) { return (s || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
     function escapeAttr(s) { return escapeHtml(s).replace(/\\/g, "\\\\"); }
 
-    async function loadPythonHost() {
-      const addr = document.getElementById('sysAddr');
-      try {
-        const r = await fetch('/servers');
-        if (r.redirected) { location.href = r.url; return; }
-        const d = await r.json();
-        const port = location.port || (location.protocol === 'https:' ? 443 : 80);
-        if (!d.servers || d.servers.length === 0) { addr.textContent = `${location.hostname}:${port}`; return; }
-        const key = d.servers[0].key || d.servers[0].folder;
-        const s = await fetch(`/server/stats/${encodeURIComponent(key)}`);
-        const sd = await s.json();
-        addr.textContent = `${sd.ip || location.hostname}:${port}`;
-      } catch (e) { addr.textContent = `${location.hostname}:EXT`; }
-    }
+
 
     async function loadServers() {
       const r = await fetch('/servers');
@@ -1012,7 +999,7 @@
       if (d.success) { closeM(); loadServers(); toast('Engine created', 'success'); } else toast(d.message, 'error');
     });
 
-    document.addEventListener('DOMContentLoaded', () => { loadServers(); loadPythonHost(); });
+    document.addEventListener('DOMContentLoaded', () => { loadServers(); });
     setInterval(() => { if (document.getElementById('homeView').style.display !== 'none') loadServers(); }, 10000);
 
     document.addEventListener('contextmenu', e => e.preventDefault());

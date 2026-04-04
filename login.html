@@ -18,6 +18,7 @@
       --text-muted: #8E8E93;
       --border: rgba(255, 255, 255, 0.08);
       --error: #FF453A;
+      --success: #32D74B;
     }
 
     * {
@@ -38,7 +39,6 @@
       position: relative;
     }
 
-    /* Animated background elements */
     body::before {
       content: '';
       position: absolute;
@@ -77,7 +77,7 @@
 
     .container {
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       padding: 20px;
       position: relative;
       z-index: 10;
@@ -169,8 +169,50 @@
       letter-spacing: 0.1em;
     }
 
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.3s;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: 0.05em;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
     .input-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       position: relative;
     }
 
@@ -223,8 +265,18 @@
       transform: translateY(0);
     }
 
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
     .msg {
-      margin-top: 24px;
+      margin-top: 20px;
       font-size: 13px;
       font-weight: 500;
       min-height: 20px;
@@ -232,14 +284,13 @@
     }
 
     .footer {
-      margin-top: 40px;
+      margin-top: 36px;
       color: rgba(255, 255, 255, 0.2);
       font-size: 11px;
       font-family: 'JetBrains Mono', monospace;
       letter-spacing: 0.05em;
     }
 
-    /* Fancy Loading bar */
     .loading-bar {
       position: absolute;
       bottom: 0;
@@ -260,6 +311,42 @@
         transform: translateX(100%);
       }
     }
+
+    .plans-info {
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    .plan-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .plan-name {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .plan-detail {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .plan-free {
+      border-color: rgba(50, 215, 75, 0.3);
+    }
+
+    .plan-pro {
+      border-color: rgba(10, 132, 255, 0.3);
+    }
   </style>
 </head>
 
@@ -271,93 +358,153 @@
         <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
       </div>
       <h1>الذئب الابيض</h1>
-      <div class="subtitle">System Authentication</div>
+      <div class="subtitle">Bot Hosting Platform</div>
 
-      <div class="input-group">
-        <input id="u" placeholder="Designation (Username)" autocomplete="username">
-      </div>
-      <div class="input-group">
-        <input id="p" placeholder="Passcode" type="password" autocomplete="current-password">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">LOGIN</button>
+        <button class="tab" onclick="switchTab('register')">REGISTER</button>
       </div>
 
-      <button class="btn" onclick="doLogin()">
-        <span id="btnText">AUTHENTICATE</span>
-        <div class="loading-bar" id="loadBar"></div>
-      </button>
+      <!-- LOGIN -->
+      <div class="form-section active" id="loginForm">
+        <div class="input-group">
+          <input id="lu" placeholder="Username" autocomplete="username">
+        </div>
+        <div class="input-group">
+          <input id="lp" placeholder="Password" type="password" autocomplete="current-password">
+        </div>
+        <button class="btn" onclick="doLogin()">
+          <span id="loginBtnText">AUTHENTICATE</span>
+          <div class="loading-bar" id="loginLoad"></div>
+        </button>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="form-section" id="registerForm">
+        <div class="input-group">
+          <input id="ru" placeholder="Choose a username" autocomplete="off" minlength="3" maxlength="20">
+        </div>
+        <div class="input-group">
+          <input id="rp" placeholder="Create a password" type="password" autocomplete="new-password" minlength="6">
+        </div>
+        <div class="input-group">
+          <input id="rp2" placeholder="Confirm password" type="password" autocomplete="new-password">
+        </div>
+        <button class="btn" onclick="doRegister()">
+          <span id="regBtnText">CREATE ACCOUNT</span>
+          <div class="loading-bar" id="regLoad"></div>
+        </button>
+        <div class="plans-info">
+          <div class="plan-row plan-free">
+            <span class="plan-name">🟢 Free</span>
+            <span class="plan-detail">1 BOT · 256MB RAM</span>
+          </div>
+          <div class="plan-row plan-pro">
+            <span class="plan-name">🔵 Pro</span>
+            <span class="plan-detail">5 BOTS · 512MB RAM</span>
+          </div>
+        </div>
+      </div>
 
       <div class="msg" id="m"></div>
 
       <div class="footer">
-        © 2026 WHITE WOLF PROTOCOL [v2.4.0]<br>
+        © 2026 WHITE WOLF PROTOCOL [v0.1]<br>
         PROTECTED BY @j49_c
       </div>
     </div>
   </div>
 
   <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => { t.classList.toggle('active', (tab === 'login' ? i === 0 : i === 1)); });
+      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+      document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+      document.getElementById('m').textContent = '';
+    }
+
     async function doLogin() {
       const m = document.getElementById('m');
-      const lb = document.getElementById('loadBar');
-      const bt = document.getElementById('btnText');
+      const lb = document.getElementById('loginLoad');
+      const bt = document.getElementById('loginBtnText');
+      m.textContent = ''; lb.style.display = 'block'; bt.textContent = 'CONNECTING...';
 
-      m.textContent = '';
-      lb.style.display = 'block';
-      bt.textContent = 'CONNECTING...';
-
-      const username = document.getElementById('u').value.trim();
-      const password = document.getElementById('p').value;
+      const username = document.getElementById('lu').value.trim();
+      const password = document.getElementById('lp').value;
 
       try {
         const r = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-        const d = await r.json().catch(() => ({ success: false, message: 'Encryption mismatch' }));
-
+        const d = await r.json().catch(() => ({ success: false, message: 'Connection error' }));
         if (!r.ok || !d.success) {
           m.style.color = "var(--error)";
-          m.textContent = (d.message || 'Verification Failed').toUpperCase();
-          lb.style.display = 'none';
-          bt.textContent = 'AUTHENTICATE';
+          m.textContent = (d.message || 'Authentication Failed').toUpperCase();
+          lb.style.display = 'none'; bt.textContent = 'AUTHENTICATE';
           return;
         }
-
-        m.style.color = "#32D74B";
-        m.textContent = 'ACCESS GRANTED. INITIALIZING...';
+        m.style.color = "var(--success)";
+        m.textContent = 'ACCESS GRANTED';
         bt.textContent = 'INITIALIZING...';
-
-        setTimeout(() => {
-          window.location.href = d.is_admin ? './admin' : './';
-        }, 800);
+        setTimeout(() => { window.location.href = d.is_admin ? './admin' : './'; }, 600);
       } catch (e) {
-        m.style.color = "var(--error)";
-        m.textContent = "UPLINK ERROR";
-        lb.style.display = 'none';
-        bt.textContent = 'RETRY';
+        m.style.color = "var(--error)"; m.textContent = "CONNECTION ERROR";
+        lb.style.display = 'none'; bt.textContent = 'RETRY';
       }
     }
 
-    // --- SECURITY PROTOCOL: ANTI-INSPECTION ---
+    async function doRegister() {
+      const m = document.getElementById('m');
+      const lb = document.getElementById('regLoad');
+      const bt = document.getElementById('regBtnText');
+      m.textContent = '';
+
+      const username = document.getElementById('ru').value.trim();
+      const password = document.getElementById('rp').value;
+      const password2 = document.getElementById('rp2').value;
+
+      if (username.length < 3) { m.style.color = "var(--error)"; m.textContent = "USERNAME MIN 3 CHARACTERS"; return; }
+      if (password.length < 6) { m.style.color = "var(--error)"; m.textContent = "PASSWORD MIN 6 CHARACTERS"; return; }
+      if (password !== password2) { m.style.color = "var(--error)"; m.textContent = "PASSWORDS DO NOT MATCH"; return; }
+
+      lb.style.display = 'block'; bt.textContent = 'CREATING...';
+
+      try {
+        const r = await fetch('/api/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const d = await r.json().catch(() => ({ success: false, message: 'Connection error' }));
+        if (!r.ok || !d.success) {
+          m.style.color = "var(--error)";
+          m.textContent = (d.message || 'Registration Failed').toUpperCase();
+          lb.style.display = 'none'; bt.textContent = 'CREATE ACCOUNT';
+          return;
+        }
+        m.style.color = "var(--success)";
+        m.textContent = 'ACCOUNT CREATED. REDIRECTING...';
+        bt.textContent = 'SUCCESS';
+        setTimeout(() => { window.location.href = './'; }, 600);
+      } catch (e) {
+        m.style.color = "var(--error)"; m.textContent = "CONNECTION ERROR";
+        lb.style.display = 'none'; bt.textContent = 'RETRY';
+      }
+    }
+
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = function (e) {
-      if (e.keyCode == 123) return false; // F12
+      if (e.keyCode == 123) return false;
       if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
-      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // View Source
+      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
     };
+    setInterval(() => { const s = performance.now(); debugger; if (performance.now() - s > 100) window.location.href = "about:blank"; }, 500);
 
-    // Debugger trap to hinder devtools
-    setInterval(() => {
-      const start = performance.now();
-      debugger;
-      if (performance.now() - start > 100) {
-        window.location.href = "about:blank";
-      }
-    }, 500);
-
-    // Hit enter to login
     document.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') doLogin();
+      if (e.key === 'Enter') {
+        if (document.getElementById('loginForm').classList.contains('active')) doLogin();
+        else doRegister();
+      }
     });
   </script>
 </body>
