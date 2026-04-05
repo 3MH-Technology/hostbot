@@ -358,23 +358,23 @@
         <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo" class="logo-img">
       </div>
       <h1>الذئب الابيض</h1>
-      <div class="subtitle">Bot Hosting Platform</div>
+      <div class="subtitle">Bot Hosting Platform / منصة استضافة البوتات</div>
 
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('login')">LOGIN</button>
-        <button class="tab" onclick="switchTab('register')">REGISTER</button>
+        <button class="tab active" onclick="switchTab('login')">LOGIN / دخول</button>
+        <button class="tab" onclick="switchTab('register')">REGISTER / حساب جديد</button>
       </div>
 
       <!-- LOGIN -->
       <div class="form-section active" id="loginForm">
         <div class="input-group">
-          <input id="lu" placeholder="Username" autocomplete="username">
+          <input id="lu" placeholder="Username / اسم المستخدم" autocomplete="username">
         </div>
         <div class="input-group">
-          <input id="lp" placeholder="Password" type="password" autocomplete="current-password">
+          <input id="lp" placeholder="Password / كلمة المرور" type="password" autocomplete="current-password">
         </div>
         <button class="btn" onclick="doLogin()">
-          <span id="loginBtnText">AUTHENTICATE</span>
+          <span id="loginBtnText">AUTHENTICATE / تسجيل الدخول</span>
           <div class="loading-bar" id="loginLoad"></div>
         </button>
       </div>
@@ -383,43 +383,42 @@
       <div class="form-section" id="registerForm">
         <div id="regStep1">
           <div class="input-group">
-            <input id="re" placeholder="Email Address (e.g user@domain.com)" type="email" autocomplete="email">
+            <input id="re" placeholder="Email Address / البريد الإلكتروني" type="email" autocomplete="email">
           </div>
           <div class="input-group">
-            <input id="ru" placeholder="Choose a username" autocomplete="off" minlength="3" maxlength="20">
+            <input id="ru" placeholder="Choose a username / اختر اسم مستخدم" autocomplete="off" minlength="3"
+              maxlength="20">
           </div>
           <div class="input-group">
-            <input id="rp" placeholder="Create a password" type="password" autocomplete="new-password" minlength="6">
+            <input id="rp" placeholder="Create a password / كلمة مرور جديدة" type="password" autocomplete="new-password"
+              minlength="6">
           </div>
           <div class="input-group">
-            <input id="rp2" placeholder="Confirm password" type="password" autocomplete="new-password">
+            <input id="rp2" placeholder="Confirm password / تأكيد كلمة المرور" type="password"
+              autocomplete="new-password">
           </div>
           <button class="btn" onclick="doRegister()">
-            <span id="regBtnText">SEND VERIFICATION CODE</span>
+            <span id="regBtnText">SEND VERIFICATION CODE / أرسل كود التحقق</span>
             <div class="loading-bar" id="regLoad"></div>
           </button>
         </div>
 
         <div id="regStep2" style="display:none; text-align:center;">
-          <p style="color:var(--text-muted); font-size:14px; margin-bottom: 20px;">We sent a 6-digit code to your email.
-            Please enter it below.</p>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom: 20px;">We sent a 6-digit code to your
+            email.<br>لقد أرسلنا كود تحقق من 6 أرقام إلى بريدك الإلكتروني.</p>
           <div class="input-group">
-            <input id="rotp" placeholder="Enter 6-digit Code" maxlength="6"
+            <input id="rotp" placeholder="Enter 6-digit Code / أدخل الكود" maxlength="6"
               style="text-align:center; font-size: 24px; letter-spacing: 10px;">
           </div>
           <button class="btn" onclick="doVerify()">
-            <span id="verifyBtnText">CONFIRM REGISTRATION</span>
+            <span id="verifyBtnText">CONFIRM REGISTRATION / تأكيد الحساب</span>
             <div class="loading-bar" id="verifyLoad"></div>
           </button>
         </div>
         <div class="plans-info">
-          <div class="plan-row plan-free">
-            <span class="plan-name">🟢 Free</span>
-            <span class="plan-detail">1 BOT · 256MB RAM</span>
-          </div>
-          <div class="plan-row plan-pro">
-            <span class="plan-name">🔵 Pro</span>
-            <span class="plan-detail">5 BOTS · 512MB RAM</span>
+          <div class="plan-row plan-free" style="border-color: var(--success); background: rgba(50, 215, 75, 0.1);">
+            <span class="plan-name">🟢 UNLIMITED FREE / مجاني بالكامل</span>
+            <span class="plan-detail">100 BOTS · 4GB RAM · AI ACCESS</span>
           </div>
         </div>
       </div>
@@ -483,9 +482,9 @@
       const password = document.getElementById('rp').value;
       const pass2 = document.getElementById('rp2').value;
 
-      if (!email.includes('@')) { m.style.color = "var(--error)"; m.textContent = 'INVALID EMAIL'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE'; return; }
-      if (password !== pass2) { m.style.color = "var(--error)"; m.textContent = 'PASSWORDS MISMATCH'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE'; return; }
-      if (password.length < 6) { m.style.color = "var(--error)"; m.textContent = 'PASSWORD MIN 6 CHARACTERS'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE'; return; }
+      if (!email.includes('@')) { m.style.color = "var(--error)"; m.textContent = 'INVALID EMAIL / بريد غير صالح'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE / أرسل كود التحقق'; return; }
+      if (password !== pass2) { m.style.color = "var(--error)"; m.textContent = 'PASSWORDS MISMATCH / كلمات المرور غير متطابقة'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE / أرسل كود التحقق'; return; }
+      if (password.length < 6) { m.style.color = "var(--error)"; m.textContent = 'PASSWORD MIN 6 CHARACTERS / كلمة المرور قصيرة جداً'; lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE / أرسل كود التحقق'; return; }
 
       try {
         const r = await fetch('/api/auth/register-otp', {
@@ -495,20 +494,29 @@
         const d = await r.json().catch(() => ({ success: false, message: 'Connection error' }));
         if (!r.ok || !d.success) {
           m.style.color = "var(--error)";
-          m.textContent = (d.message || 'Registration Failed').toUpperCase();
-          lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE';
+          m.textContent = (d.message || 'Registration Failed / فشل التسجيل').toUpperCase();
+          lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE / أرسل كود التحقق';
+          return;
+        }
+
+        if (d.skip_otp) {
+          m.style.color = "#FF9F0A";
+          m.textContent = d.message || 'ACCOUNT CREATED (PENDING APPROVAL) / بانتظار الموافقة';
+          lb.style.display = 'none';
+          document.getElementById('regStep1').style.display = 'none';
+          bt.style.display = 'none';
           return;
         }
 
         m.style.color = "var(--success)";
-        m.textContent = 'OTP SENT TO EMAIL';
+        m.textContent = 'OTP SENT TO EMAIL / تم إرسال كود التحقق';
         document.getElementById('regStep1').style.display = 'none';
         document.getElementById('regStep2').style.display = 'block';
 
       } catch (e) {
         m.style.color = "var(--error)";
-        m.textContent = 'NETWORK FAILURE';
-        lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE';
+        m.textContent = 'NETWORK FAILURE / فشل في الاتصال';
+        lb.style.display = 'none'; bt.textContent = 'SEND VERIFICATION CODE / أرسل كود التحقق';
       }
     }
 

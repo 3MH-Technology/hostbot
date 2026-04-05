@@ -3,14 +3,9 @@ import time
 import datetime
 import os
 
-SPACE_URL = os.environ.get("SPACE_URL", "")
 LOCAL_PORT = os.environ.get("SERVER_PORT", "7860")
 LOCAL_URL = f"http://127.0.0.1:{LOCAL_PORT}/health"
-
 TARGETS = [LOCAL_URL]
-if SPACE_URL:
-    TARGETS.append(SPACE_URL.rstrip("/") + "/health")
-
 
 def start_pinging():
     print(f"[*] Keep-alive targets: {TARGETS}")
@@ -31,3 +26,4 @@ def start_pinging():
 
 if __name__ == "__main__":
     start_pinging()
+

@@ -168,6 +168,7 @@
             line-height: 1.2;
             background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -471,19 +472,19 @@
     <div class="glow-orb orb-2"></div>
 
     <nav>
-        <a style="cursor:pointer;" onclick="location.href='/'"  class="brand">
+        <a style="cursor:pointer;" onclick="location.href='/'" class="brand">
             <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo">
             استضافة الذئب
         </a>
         <div class="nav-links">
             <a href="#features">التقنيات</a>
             <a href="#pricing">الباقات</a>
-            <a style="cursor:pointer;" onclick="location.href='/features-info'" >المميزات الشاملة</a>
-            <a style="cursor:pointer;" onclick="location.href='/docs'" >مركز المساعدة</a>
-            <a style="cursor:pointer;" onclick="location.href='/developer'" >عن المطور</a>
+            <a style="cursor:pointer;" onclick="location.href='/features-info'">المميزات الشاملة</a>
+            <a style="cursor:pointer;" onclick="location.href='/docs'">مركز المساعدة</a>
+            <a style="cursor:pointer;" onclick="location.href='/developer'">عن المطور</a>
         </div>
         <div>
-            <a style="cursor:pointer;" onclick="location.href='/login'"  class="btn">ابدأ الآن — مجاناً</a>
+            <a style="cursor:pointer;" onclick="location.href='/login'" class="btn">ابدأ الآن — مجاناً</a>
         </div>
     </nav>
 
@@ -492,9 +493,10 @@
         <p>صُممت استضافة الذئب خصيصاً للمطورين المحترفين لتشغيل بوتات بايثون بأعلى درجات الاستقرار والسرعة والعزل الأمني
             الكامل. قم بإدارة سيرفرك بضغطة زر وبدون سطر أوامر واحد.</p>
         <div class="header-btns">
-            <a style="cursor:pointer;" onclick="location.href='/login'"  class="btn" style="padding: 16px 40px; font-size: 18px; border-radius: 20px;">إنشاء حساب
+            <a style="cursor:pointer;" onclick="location.href='/login'" class="btn"
+                style="padding: 16px 40px; font-size: 18px; border-radius: 20px;">إنشاء حساب
                 جديد</a>
-            <a style="cursor:pointer;" onclick="location.href='/docs'"  class="btn btn-secondary"
+            <a style="cursor:pointer;" onclick="location.href='/docs'" class="btn btn-secondary"
                 style="padding: 16px 40px; font-size: 18px; border-radius: 20px;">تصفح الدليل</a>
         </div>
     </header>
@@ -544,40 +546,24 @@
     </section>
 
     <section id="pricing">
-        <div class="sec-title">استثمار يرفع من جودة عملك</div>
-        <div class="sec-desc">اختر الخطة التي تطابق احتياجاتك، تستطيع الترقية في أي وقت من لوحة التحكم. الأسعار شفافة
-            ولا توجد رسوم خفية.</div>
+        <div class="sec-title">خطة شاملة ومجانية للجميع</div>
+        <div class="sec-desc">نحن نؤمن بدعم المطورين، لذلك جعلنا المنصة مجانية بالكامل مع موارد ضخمة لكل مستخدم.</div>
 
-        <div class="grid-3" style="max-width: 1000px; margin: 0 auto;">
-            <div class="card pricing-card">
-                <div class="icon-box"
-                    style="color:var(--success); border-color: rgba(50,215,75,0.2); background: rgba(50,215,75,0.1)">🟢
-                </div>
-                <h3>بيئة الانطلاق (Free)</h3>
-                <p>مثالية للبوتات الشخصية ومشاريع التخرج.</p>
+        <div class="grid-3" style="max-width: 800px; margin: 0 auto;">
+            <div class="card pricing-card pro-card" style="grid-column: span 3;">
+                <div class="icon-box">🛸</div>
+                <h3>باقة الذئب اللانهائية (Unlimited Free)</h3>
+                <p>كل ما تحتاجه لتشغيل أضخم المشاريع مجاناً.</p>
                 <div class="price-tag">$0 <span>/ دائماً</span></div>
                 <ul class="pkg-lst">
-                    <li>1 سيرفر بوت مستقل</li>
-                    <li>256MB ذاكرة الوصول (RAM)</li>
-                    <li>50MB سعة التخزين (NVMe)</li>
-                    <li>إعادة تشغيل تلقائي</li>
+                    <li>100 سيرفر بوت مستقل</li>
+                    <li>4GB ذاكرة الوصول (RAM) لكل سيرفر</li>
+                    <li>10GB سعة التخزين (NVMe)</li>
+                    <li>دخول كامل لمساعد الذكاء الاصطناعي (AI Assistant)</li>
+                    <li>إدارة تلقائية للمكتبات (Auto-PIP)</li>
                 </ul>
-                <a style="cursor:pointer;" onclick="location.href='/login'"  class="btn btn-secondary" style="width: 100%">سجل مجاناً</a>
-            </div>
-
-            <div class="card pricing-card pro-card">
-                <div class="icon-box">🛸</div>
-                <h3>الاحترافية (Pro)</h3>
-                <p>للأعمال والمشاريع الكبيرة ذات الترافيك العالي.</p>
-                <div class="price-tag">$5 <span>/ شهرياً</span></div>
-                <ul class="pkg-lst">
-                    <li>5 سيرفرات بوت مستقلة</li>
-                    <li>512MB ذاكرة الوصول (RAM) لكل سيرفر</li>
-                    <li>500MB سعة التخزين (NVMe)</li>
-                    <li>أولوية التوصيل والموارد المخصصة</li>
-                    <li>دعم فني خاص على التلجرام</li>
-                </ul>
-                <a style="cursor:pointer;" onclick="location.href='/login'"  class="btn" style="width: 100%">اشترك الآن</a>
+                <a style="cursor:pointer;" onclick="location.href='/login'" class="btn" style="width: 100%">ابدأ الآن
+                    مجاناً</a>
             </div>
         </div>
     </section>
@@ -608,7 +594,7 @@
     <footer>
         <div class="footer-grid">
             <div class="footer-col">
-                <a style="cursor:pointer;" onclick="location.href='/'"  class="brand" style="margin-bottom: 24px;">
+                <a style="cursor:pointer;" onclick="location.href='/'" class="brand" style="margin-bottom: 24px;">
                     <img src="https://f.top4top.io/p_37210bgwm1.jpg" alt="Logo">
                     استضافة الذئب
                 </a>
@@ -617,20 +603,20 @@
             </div>
             <div class="footer-col">
                 <h4>الروابط السريعة</h4>
-                <a style="cursor:pointer;" onclick="location.href='/login'" >تسجيل الدخول / إنشاء حساب</a>
-                <a style="cursor:pointer;" onclick="location.href='/features-info'" >استكشاف الميزات</a>
+                <a style="cursor:pointer;" onclick="location.href='/login'">تسجيل الدخول / إنشاء حساب</a>
+                <a style="cursor:pointer;" onclick="location.href='/features-info'">استكشاف الميزات</a>
                 <a href="#pricing">باقات الاشتراك</a>
             </div>
             <div class="footer-col">
                 <h4>الموارد</h4>
-                <a style="cursor:pointer;" onclick="location.href='/docs'" >الدليل الشامل للتوصيل</a>
-                <a style="cursor:pointer;" onclick="location.href='/developer'" >المدير التنفيذي والمطور</a>
+                <a style="cursor:pointer;" onclick="location.href='/docs'">الدليل الشامل للتوصيل</a>
+                <a style="cursor:pointer;" onclick="location.href='/developer'">المدير التنفيذي والمطور</a>
                 <a href="https://t.me/j49_c" target="_blank">خدمة العملاء الفورية</a>
             </div>
             <div class="footer-col">
                 <h4>الشؤون القانونية</h4>
-                <a style="cursor:pointer;" onclick="location.href='/terms'" >شروط وأحكام الاستخدام</a>
-                <a style="cursor:pointer;" onclick="location.href='/privacy'" >سياسة الخصوصية والأمان</a>
+                <a style="cursor:pointer;" onclick="location.href='/terms'">شروط وأحكام الاستخدام</a>
+                <a style="cursor:pointer;" onclick="location.href='/privacy'">سياسة الخصوصية والأمان</a>
             </div>
         </div>
 

@@ -19,6 +19,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 from collections import defaultdict
+try:
+    from ollamafreeapi import OllamaFreeAPI
+    ai_client = OllamaFreeAPI()
+except ImportError:
+    ai_client = None
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,10 +43,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-app.secret_key = os.environ.get("PANEL_SECRET_KEY", "CHANGE_ME_STABLE_KEY_123")
+app.secret_key = os.environ.get("PANEL_SECRET_KEY") or os.urandom(24)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SAMESITE='Strict',
     SESSION_COOKIE_SECURE=True,
     PERMANENT_SESSION_LIFETIME=604800,
     MAX_CONTENT_LENGTH=50 * 1024 * 1024
@@ -70,8 +75,10 @@ def rate_limited(fn):
 def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    # Removed X-Frame-Options for Hugging Face Spaces compatibility
-    response.headers['Referrer-Policy'] = 'no-referrer-when-downgrade'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io; object-src 'none';"
+    response.headers['Referrer-Policy'] = 'strict-origin-when-downgrade'
     return response
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
@@ -169,10 +176,29 @@ def current_username():
 
 
 PLANS = {
-    "free": {"label": "Free", "max_bots": 1, "max_mem_mb": 256, "max_disk_mb": 50},
-    "pro": {"label": "Pro", "max_bots": 5, "max_mem_mb": 512, "max_disk_mb": 500},
-    "enterprise": {"label": "Enterprise", "max_bots": 50, "max_mem_mb": 1024, "max_disk_mb": 5000},
+    "free": {"label": "Free Tier", "max_bots": 1, "max_mem_mb": 256, "max_disk_mb": 100},
+    "pro": {"label": "Silver Tier", "max_bots": 3, "max_mem_mb": 512, "max_disk_mb": 1000},
+    "enterprise": {"label": "Gold Tier", "max_bots": 10, "max_mem_mb": 1024, "max_disk_mb": 5000},
 }
+
+# --- ADS SYSTEM ---
+ADS_FILE = os.path.join(DATA_DIR, "ads.json")
+
+def load_ads():
+    if not os.path.exists(ADS_FILE):
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+    try:
+        with open(ADS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+
+def save_ads(data):
+    with open(ADS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+BOT_RENEW_DAYS = 4
+AI_DAILY_LIMIT = 20
 
 
 def get_user_plan(username: str) -> dict:
@@ -294,7 +320,13 @@ def ensure_meta(owner: str, folder: str):
     server_dir = get_server_dir(owner, folder)
     os.makedirs(server_dir, exist_ok=True)
     meta_path = os.path.join(server_dir, "meta.json")
-    base = {"display_name": folder, "startup_file": "", "owner": owner, "banned": False}
+    base = {
+        "display_name": folder, 
+        "startup_file": "", 
+        "owner": owner, 
+        "banned": False,
+        "last_renewed": time.time() # Bot needs renewal every 4 days
+    }
     if not os.path.exists(meta_path):
         with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(base, f, indent=2)
@@ -470,13 +502,22 @@ while True:
     log_path = os.path.join(server_dir, "server.log")
     log_file = open(log_path, "a", encoding="utf-8", errors="ignore")
 
-    proc = subprocess.Popen(
-        [sys.executable, "-u", "-c", wrapper_code, startup_file],
-        cwd=server_dir,
-        stdout=log_file,
-        stderr=log_file,
-        env=get_subprocess_env(),
-    )
+    if startup_file.lower().endswith(".php"):
+        proc = subprocess.Popen(
+            ["php", startup_file],
+            cwd=server_dir,
+            stdout=log_file,
+            stderr=log_file,
+            env=get_subprocess_env(),
+        )
+    else:
+        proc = subprocess.Popen(
+            [sys.executable, "-u", "-c", wrapper_code, startup_file],
+            cwd=server_dir,
+            stdout=log_file,
+            stderr=log_file,
+            env=get_subprocess_env(),
+        )
     return proc, log_file
 
 
@@ -557,6 +598,7 @@ def logout():
 
 
 @app.route("/api/auth/login", methods=["POST"])
+@rate_limited
 def api_login():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
@@ -572,7 +614,7 @@ def api_login():
     if not u:
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
     if not u.get("active", True):
-        return jsonify({"success": False, "message": "Account is banned / inactive"}), 403
+        return jsonify({"success": False, "message": "حسابك معلق أوبانتظار موافقة الإدارة (Pending/Banned)"}), 403
     if not check_password_hash(u.get("password_hash", ""), password):
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
@@ -588,6 +630,12 @@ import random
 
 OTP_STORAGE = {}
 
+DISPOSABLE_DOMAINS = [
+    "tempmail.com", "10minutemail.com", "guerrillamail.com", 
+    "mailinator.com", "yopmail.com", "dropmail.me", "mohmal.com", 
+    "maildrop.cc", "dispostable.com", "temp-mail.org", "nada.ltd"
+]
+
 def get_client_ip():
     if request.headers.get('X-Forwarded-For'):
         return request.headers.get('X-Forwarded-For').split(',')[0].strip()
@@ -600,8 +648,8 @@ def send_otp_email(to_email, code):
     password = os.environ.get("SMTP_PASS", "")
 
     if not user or not password:
-        logger.warning(f"SMTP not configured. Sent OTP {code} to {to_email} (Simulated)")
-        return True
+        logger.error("SMTP not configured. Real email required!")
+        return False
 
     msg = EmailMessage()
     msg.set_content(f"مرحباً بك في استضافة الذئب.\n\nكود التحقق الخاص بك هو: {code}\n\nيرجى عدم مشاركة هذا الكود مع أحد.")
@@ -631,6 +679,10 @@ def api_register_otp():
     if not email or '@' not in email:
          return jsonify({"success": False, "message": "البريد الإلكتروني غير صالح"}), 400
 
+    # Disable disposable domain check to make it easy
+    # if domain in DISPOSABLE_DOMAINS:
+    #      return jsonify({"success": False, "message": "عذراً، لا يتم قبول خوادم البريد الوهمية / المؤقتة."}), 400
+
     if len(username) < 3 or len(username) > 20:
         return jsonify({"success": False, "message": "Username must be 3-20 characters"}), 400
     if not re.match(r'^[A-Za-z0-9_]+$', username):
@@ -642,19 +694,32 @@ def api_register_otp():
 
     client_ip = get_client_ip()
     db = load_users()
-    
-    # IP CHECK
-    if client_ip:
-        for u in db.get("users", []):
-            if u.get("ip") == client_ip:
-                return jsonify({"success": False, "message": "لقد قمت مسبقاً بإنشاء حساب من هذا الجهاز"}), 403
-
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
     for u in db.get("users", []):
         if u.get("email") == email:
             return jsonify({"success": False, "message": "Email already in use"}), 409
+
+    user_smtp = os.environ.get("SMTP_USER", "")
+    if not user_smtp:
+        new_user = {
+            "username": username,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "active": True, # Make everyone active by default
+            "plan": "free",
+            "ip": client_ip,
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        db.setdefault("users", []).append(new_user)
+        save_users(db)
+        logger.info(f"New user registered (EASY): {username} from IP: {client_ip}")
+        # Log in the user immediately
+        session["user"] = {"username": username, "is_admin": False}
+        session.permanent = True
+        ensure_user_dirs(username)
+        return jsonify({"success": True, "skip_otp": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
 
     otp = str(random.randint(100000, 999999))
     OTP_STORAGE[email] = {
@@ -668,7 +733,22 @@ def api_register_otp():
     if send_otp_email(email, otp):
         return jsonify({"success": True, "message": "تم إرسال كود التحقق"}), 200
     else:
-        return jsonify({"success": False, "message": "فشل في إرسال البريد الإلكتروني"}), 500
+        # Fallback for "easy" platform: if email fails, just create the account
+        new_user = {
+            "username": username,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "active": True,
+            "plan": "free",
+            "ip": client_ip,
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        db.setdefault("users", []).append(new_user)
+        save_users(db)
+        session["user"] = {"username": username, "is_admin": False}
+        session.permanent = True
+        ensure_user_dirs(username)
+        return jsonify({"success": True, "skip_otp": True, "message": "فشل إرسال البريد ولكن تم إنشاء حسابك بنجاح! جاري التحويل..."}), 200
 
 
 @app.route("/api/auth/register-verify", methods=["POST"])
@@ -856,6 +936,7 @@ def servers():
 
 @app.route("/add", methods=["POST"])
 @login_required
+@rate_limited
 def add_server():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
@@ -874,7 +955,7 @@ def add_server():
         limit = get_user_limit(owner)
         existing = [d for d in os.listdir(get_user_servers_root(owner)) if os.path.isdir(get_server_dir(owner, d))]
         if len(existing) >= limit:
-            return jsonify({"success": False, "message": f"Server limit reached ({limit}). Ask admin for premium."}), 403
+            return jsonify({"success": False, "message": f"لقد وصلت للحد الأقصى ({limit}). تواصل مع الدعم لزيادة السعة مجاناً."}), 403
 
     target = get_server_dir(owner, folder)
     if os.path.exists(target):
@@ -973,6 +1054,7 @@ def background_start(key: str, owner: str, folder: str, startup_file: str):
 
 @app.route("/server/action/<path:key>/<act>", methods=["POST"])
 @login_required
+@rate_limited
 def server_action(key, act):
     if not can_access_key(key):
         return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -986,6 +1068,12 @@ def server_action(key, act):
     if meta.get("banned", False):
         set_state(key, "Banned")
         return jsonify({"success": False, "message": "Server is banned by admin"}), 403
+
+    # RENEWAL CHECK
+    days_passed = (time.time() - meta.get("last_renewed", 0)) / (24 * 3600)
+    if not is_admin_session() and days_passed > BOT_RENEW_DAYS:
+        set_state(key, "Offline")
+        return jsonify({"success": False, "expired": True, "message": "Bot expired. Please reactivate it from the dashboard."}), 403
 
     if act in ("stop", "restart"):
         stop_proc(key)
@@ -1026,6 +1114,7 @@ def set_startup(key):
 
 @app.route("/server/delete/<path:key>", methods=["POST"])
 @login_required
+@rate_limited
 def server_delete(key):
     if not can_access_key(key):
         return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -1089,6 +1178,7 @@ def file_content(key):
 
 @app.route("/files/save/<path:key>", methods=["POST"])
 @login_required
+@rate_limited
 def file_save(key):
     if not can_access_key(key):
         return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -1185,6 +1275,7 @@ def file_delete(key):
 
 @app.route("/files/upload/<path:key>", methods=["POST"])
 @login_required
+@rate_limited
 def file_upload(key):
     if not can_access_key(key):
         return jsonify({"success": False, "message": "Forbidden"}), 403
@@ -1281,6 +1372,75 @@ def admin_server_ban():
 
 
 
+@app.route("/api/ai/chat", methods=["POST"])
+@login_required
+@rate_limited
+def api_ai_chat():
+    if ai_client is None:
+        return jsonify({"success": False, "message": "AI service currently unavailable"}), 503
+    
+    username = current_username()
+    db = load_users()
+    u = find_user(db, username)
+    
+    # AI LIMITS
+    now_date = time.strftime("%Y-%m-%d")
+    ai_status = u.setdefault("ai_usage", {"date": "", "count": 0})
+    if ai_status["date"] != now_date:
+        ai_status["date"] = now_date
+        ai_status["count"] = 0
+    
+    if not is_admin_session() and ai_status["count"] >= AI_DAILY_LIMIT:
+        return jsonify({"success": False, "message": f"Daily limit reached ({AI_DAILY_LIMIT} requests). Please try again tomorrow."}), 429
+    
+    data = request.get_json(silent=True) or {}
+    message = data.get("message", "").strip()
+    model = data.get("model", "deepseek-r1:latest")
+    
+    if not message:
+        return jsonify({"success": False, "message": "No message provided"}), 400
+        
+    SYSTEM_PROMPT = "You are White Wolf AI, a specialized assistant for the White Wolf Bot Hosting platform. " \
+                    "Help users with their bots, code, and platform issues. Be helpful and expert."
+    
+    try:
+        # Integrating system prompt into the user's prompt for simple API call
+        full_prompt = f"System: {SYSTEM_PROMPT}\nUser: {message}"
+        response = ai_client.chat(model=model, prompt=full_prompt)
+        
+        ai_status["count"] += 1
+        save_users(db)
+        
+        return jsonify({"success": True, "response": response})
+    except Exception as e:
+        logger.error(f"AI Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route("/api/ai/models")
+@login_required
+def api_ai_models():
+    return jsonify({
+        "success": True, 
+        "models": ["llama3.2:3b", "deepseek-r1:latest", "mistral:latest", "gpt-oss:20b"]
+    })
+
+
+@app.route("/api/ads")
+def api_get_ads():
+    return jsonify(load_ads())
+
+@app.route("/api/server/renew/<path:key>", methods=["POST"])
+@login_required
+def api_renew_server(key):
+    if not can_access_key(key):
+        return jsonify({"success": False, "message": "Forbidden"}), 403
+    owner, folder = parse_server_key(key, allow_admin=True)
+    meta = read_meta(owner, folder)
+    meta["last_renewed"] = time.time()
+    write_meta(owner, folder, meta)
+    return jsonify({"success": True})
+
+
 @app.route("/api/admin/quickstats")
 @admin_required
 def admin_quickstats():
@@ -1365,6 +1525,25 @@ def run_keep_alive():
             logger.error(f"Keep-Alive Error: {e}")
         time.sleep(300)
 
+def run_git_sync():
+    logger.info("Git Auto-Sync system started")
+    while True:
+        try:
+            cwd = os.getcwd()
+            # Stage changes
+            subprocess.run(["git", "add", "."], cwd=cwd, capture_output=True)
+            # Commit with timestamp
+            msg = f"Auto-Sync: {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            subprocess.run(["git", "commit", "-m", msg], cwd=cwd, capture_output=True)
+            # Push to GitHub
+            subprocess.run(["git", "push", "origin", "main"], cwd=cwd, capture_output=True)
+            # Push to Hugging Face
+            subprocess.run(["git", "push", "hf", "main"], cwd=cwd, capture_output=True)
+            logger.info("Auto-Sync: Platform synced with GitHub & Hugging Face")
+        except Exception as e:
+            logger.error(f"Auto-Sync Error: {e}")
+        time.sleep(3600) # Sync every hour
+
 
 def truncate_large_logs():
     if not os.path.isdir(USERS_ROOT):
@@ -1439,6 +1618,7 @@ if __name__ == "__main__":
     # Start background tasks
     threading.Thread(target=run_keep_alive, daemon=True).start()
     threading.Thread(target=run_log_cleaner, daemon=True).start()
+    threading.Thread(target=run_git_sync, daemon=True).start()
     
     try:
         from gunicorn.app.wsgiapp import run as gunicorn_run
