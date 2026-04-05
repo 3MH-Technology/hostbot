@@ -1428,6 +1428,10 @@ def run_keep_alive():
         time.sleep(300)
 
 def run_git_sync():
+    if os.environ.get("SPACE_ID"):
+        logger.info("Git Auto-Sync disabled inside Hugging Face Space (to prevent loops)")
+        return
+    
     logger.info("Git Auto-Sync system started")
     while True:
         try:
