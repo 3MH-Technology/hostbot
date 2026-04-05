@@ -19,11 +19,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 from collections import defaultdict
-try:
-    from ollamafreeapi import OllamaFreeAPI
-    ai_client = OllamaFreeAPI()
-except ImportError:
-    ai_client = None
+ai_client = None
+def get_ai_client():
+    global ai_client
+    if ai_client is not None:
+        return ai_client
+    try:
+        from ollamafreeapi import OllamaFreeAPI
+        ai_client = OllamaFreeAPI()
+        return ai_client
+    except Exception:
+        return None
 
 logging.basicConfig(
     level=logging.INFO,
@@ -1278,7 +1284,8 @@ def admin_server_ban():
 @login_required
 @rate_limited
 def api_ai_chat():
-    if ai_client is None:
+    client = get_ai_client()
+    if client is None:
         return jsonify({"success": False, "message": "AI service currently unavailable"}), 503
     
     username = current_username()
@@ -1308,7 +1315,7 @@ def api_ai_chat():
     try:
         # Integrating system prompt into the user's prompt for simple API call
         full_prompt = f"System: {SYSTEM_PROMPT}\nUser: {message}"
-        response = ai_client.chat(model=model, prompt=full_prompt)
+        response = client.chat(model=model, prompt=full_prompt)
         
         ai_status["count"] += 1
         save_users(db)
@@ -1379,7 +1386,7 @@ def admin_quickstats():
 def run_keep_alive():
     port = int(os.environ.get("SERVER_PORT", 30170))
     url = f"http://127.0.0.1:{port}/health"
-    logger.info("Keep-Alive and Auto-Recovery system started")
+    time.sleep(15) # Wait for server to boot
     while True:
         try:
             requests.get(url, timeout=10)

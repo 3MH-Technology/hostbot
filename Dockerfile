@@ -25,7 +25,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 EXPOSE 7860
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:7860/health || exit 1
+# Healthcheck removed to prevent early restarts
 
 CMD ["python", "app.py"]
