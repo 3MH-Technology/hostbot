@@ -11,8 +11,7 @@ import sys
 import signal
 import logging
 import requests
-
-import dns_fix
+# import dns_fix
 import psutil
 from flask import Flask, send_from_directory, request, jsonify, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1539,9 +1538,8 @@ if __name__ == "__main__":
         sys.argv = [
             'gunicorn',
             '--bind', f'0.0.0.0:{port}',
-            '--worker-class', 'gthread',
+            '--worker-class', 'sync',
             '--workers', '1',
-            '--threads', '8',
             '--timeout', '600',
             'app:app'
         ]
