@@ -1291,9 +1291,18 @@ def api_ai_chat():
     db = load_users()
     u = find_user(db, username)
     
+    if not u and not is_admin_session():
+        return jsonify({"success": False, "message": "User not found"}), 404
+
     # AI LIMITS
     now_date = time.strftime("%Y-%m-%d")
-    ai_status = u.setdefault("ai_usage", {"date": "", "count": 0})
+    
+    if u:
+        ai_status = u.setdefault("ai_usage", {"date": "", "count": 0})
+    else:
+        # Admin or special user not in DB, create temporary status
+        ai_status = {"date": now_date, "count": 0}
+
     if ai_status["date"] != now_date:
         ai_status["date"] = now_date
         ai_status["count"] = 0
