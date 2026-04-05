@@ -625,11 +625,6 @@ def api_login():
 
 
 import smtplib
-from email.message import EmailMessage
-import random
-
-OTP_STORAGE = {}
-
 DISPOSABLE_DOMAINS = [
     "tempmail.com", "10minutemail.com", "guerrillamail.com", 
     "mailinator.com", "yopmail.com", "dropmail.me", "mohmal.com", 
@@ -641,31 +636,7 @@ def get_client_ip():
         return request.headers.get('X-Forwarded-For').split(',')[0].strip()
     return request.remote_addr or ""
 
-def send_otp_email(to_email, code):
-    server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-    port = int(os.environ.get("SMTP_PORT", "587"))
-    user = os.environ.get("SMTP_USER", "")
-    password = os.environ.get("SMTP_PASS", "")
-
-    if not user or not password:
-        logger.error("SMTP not configured. Real email required!")
-        return False
-
-    msg = EmailMessage()
-    msg.set_content(f"مرحباً بك في استضافة الذئب.\n\nكود التحقق الخاص بك هو: {code}\n\nيرجى عدم مشاركة هذا الكود مع أحد.")
-    msg['Subject'] = "كود التحقق - استضافة الذئب"
-    msg['From'] = f"White Wolf Protocol <{user}>"
-    msg['To'] = to_email
-
-    try:
-        with smtplib.SMTP(server, port) as s:
-            s.starttls()
-            s.login(user, password)
-            s.send_message(msg)
-        return True
-    except Exception as e:
-        logger.error(f"Failed to send email: {e}")
-        return False
+# OTP SYSTEM REMOVED
 
 
 @app.route("/api/auth/register-otp", methods=["POST"])
@@ -692,7 +663,6 @@ def api_register_otp():
     if username.lower() == ADMIN_USERNAME.lower():
         return jsonify({"success": False, "message": "Username not available"}), 400
 
-    client_ip = get_client_ip()
     db = load_users()
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
@@ -701,95 +671,27 @@ def api_register_otp():
         if u.get("email") == email:
             return jsonify({"success": False, "message": "Email already in use"}), 409
 
-    user_smtp = os.environ.get("SMTP_USER", "")
-    if not user_smtp:
-        new_user = {
-            "username": username,
-            "email": email,
-            "password_hash": generate_password_hash(password),
-            "active": True, # Make everyone active by default
-            "plan": "free",
-            "ip": client_ip,
-            "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-        }
-        db.setdefault("users", []).append(new_user)
-        save_users(db)
-        logger.info(f"New user registered (EASY): {username} from IP: {client_ip}")
-        # Log in the user immediately
-        session["user"] = {"username": username, "is_admin": False}
-        session.permanent = True
-        ensure_user_dirs(username)
-        return jsonify({"success": True, "skip_otp": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
-
-    otp = str(random.randint(100000, 999999))
-    OTP_STORAGE[email] = {
-        "otp": otp,
-        "username": username,
-        "password": password,
-        "ip": client_ip,
-        "time": time.time()
-    }
-
-    if send_otp_email(email, otp):
-        return jsonify({"success": True, "message": "تم إرسال كود التحقق"}), 200
-    else:
-        # Fallback for "easy" platform: if email fails, just create the account
-        new_user = {
-            "username": username,
-            "email": email,
-            "password_hash": generate_password_hash(password),
-            "active": True,
-            "plan": "free",
-            "ip": client_ip,
-            "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
-        }
-        db.setdefault("users", []).append(new_user)
-        save_users(db)
-        session["user"] = {"username": username, "is_admin": False}
-        session.permanent = True
-        ensure_user_dirs(username)
-        return jsonify({"success": True, "skip_otp": True, "message": "فشل إرسال البريد ولكن تم إنشاء حسابك بنجاح! جاري التحويل..."}), 200
-
-
-@app.route("/api/auth/register-verify", methods=["POST"])
-@rate_limited
-def api_register_verify():
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip()
-    otp = (data.get("code") or "").strip()
-    
-    record = OTP_STORAGE.get(email)
-    if not record or record["otp"] != otp:
-        return jsonify({"success": False, "message": "كود التحقق خاطئ أو منتهي الصلاحية"}), 400
-        
-    if time.time() - record["time"] > 600:
-        return jsonify({"success": False, "message": "كود التحقق منتهي الصلاحية"}), 400
-        
-    db = load_users()
-    username = record["username"]
-    
-    if find_user(db, username):
-        return jsonify({"success": False, "message": "Username already taken"}), 409
-
+    client_ip = get_client_ip()
     new_user = {
         "username": username,
         "email": email,
-        "password_hash": generate_password_hash(record["password"]),
+        "password_hash": generate_password_hash(password),
         "active": True,
         "plan": "free",
-        "ip": record["ip"],
+        "ip": client_ip,
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     db.setdefault("users", []).append(new_user)
     save_users(db)
-
-    del OTP_STORAGE[email]
+    logger.info(f"New user registered: {username} from IP: {client_ip}")
 
     session["user"] = {"username": username, "is_admin": False}
     session.permanent = True
     ensure_user_dirs(username)
-    logger.info(f"New user registered: {username} from IP: {record['ip']}")
-    return jsonify({"success": True})
+    return jsonify({"success": True, "skip_otp": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
+
+
+# Legacy route removed
 
 
 @app.route("/api/user/profile")
