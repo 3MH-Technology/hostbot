@@ -145,7 +145,7 @@ def log_append(key: str, text: str):
         pass
 
 
-def load_users():
+def load_db():
     if not os.path.exists(USERS_DB):
         return {"users": []}
     try:
@@ -155,7 +155,7 @@ def load_users():
         return {"users": []}
 
 
-def save_users(db):
+def save_db(db):
     tmp = USERS_DB + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2)
@@ -181,9 +181,46 @@ def current_username():
 
 
 PLANS = {
-    "free": {"label": "Free Tier", "max_bots": 1, "max_mem_mb": 256, "max_disk_mb": 100},
-    "pro": {"label": "Silver Tier", "max_bots": 3, "max_mem_mb": 512, "max_disk_mb": 1000},
-    "enterprise": {"label": "Gold Tier", "max_bots": 10, "max_mem_mb": 1024, "max_disk_mb": 5000},
+    "free": {
+        "name": "Free",
+        "label": "Free Tier",
+        "price": 0,
+        "max_bots": 3,
+        "max_mem_mb": 256,
+        "max_disk_mb": 100,
+        "max_cpu_percent": 50,
+        "features": ["3 Bots", "256MB RAM", "Basic Support"]
+    },
+    "basic": {
+        "name": "Basic",
+        "label": "Basic Tier",
+        "price": 10,
+        "max_bots": 5,
+        "max_mem_mb": 512,
+        "max_disk_mb": 500,
+        "max_cpu_percent": 70,
+        "features": ["5 Bots", "512MB RAM", "Priority Support", "Advanced Analytics"]
+    },
+    "pro": {
+        "name": "Pro",
+        "label": "Silver Tier",
+        "price": 25,
+        "max_bots": 10,
+        "max_mem_mb": 1024,
+        "max_disk_mb": 1000,
+        "max_cpu_percent": 80,
+        "features": ["10 Bots", "1GB RAM", "24/7 Support", "Advanced Analytics", "Custom Domain"]
+    },
+    "enterprise": {
+        "name": "Enterprise",
+        "label": "Gold Tier",
+        "price": 100,
+        "max_bots": 50,
+        "max_mem_mb": 4096,
+        "max_disk_mb": 5000,
+        "max_cpu_percent": 90,
+        "features": ["50 Bots", "4GB RAM", "Dedicated Support", "Advanced Analytics", "Custom Domain", "API Access", "White Label"]
+    }
 }
 
 # --- ADS SYSTEM ---
@@ -206,13 +243,23 @@ BOT_RENEW_DAYS = 4
 AI_DAILY_LIMIT = 20
 
 
-def get_user_plan(username: str) -> dict:
-    db = load_users()
+def get_user_plan_info(username: str):
+    db = load_db()
     u = find_user(db, username)
     if not u:
-        return PLANS["free"]
+        return "free", PLANS["free"]
     plan_name = u.get("plan", "free")
-    return PLANS.get(plan_name, PLANS["free"])
+    return plan_name, PLANS.get(plan_name, PLANS["free"])
+
+
+def get_user_plan_name(username: str) -> str:
+    plan_name, _ = get_user_plan_info(username)
+    return plan_name
+
+
+def get_user_plan(username: str) -> dict:
+    _, plan_info = get_user_plan_info(username)
+    return plan_info
 
 
 def get_user_limit(username: str) -> int:
@@ -614,7 +661,7 @@ def api_login():
         session.permanent = True
         return jsonify({"success": True, "is_admin": True})
 
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
@@ -669,7 +716,7 @@ def api_register_otp():
     if username.lower() == ADMIN_USERNAME.lower():
         return jsonify({"success": False, "message": "Username not available"}), 400
 
-    db = load_users()
+    db = load_db()
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
@@ -689,7 +736,7 @@ def api_register_otp():
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     db.setdefault("users", []).append(new_user)
-    save_users(db)
+    save_db(db)
     logger.info(f"New user registered: {username} from IP: {client_ip}")
 
     session["user"] = {"username": username, "is_admin": False}
@@ -705,7 +752,7 @@ def api_register_otp():
 @login_required
 def api_user_profile():
     username = current_username()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     plan_name = "admin" if is_admin_session() else (u.get("plan", "free") if u else "free")
     plan_info = PLANS.get(plan_name, PLANS["free"])
@@ -723,7 +770,7 @@ def api_user_profile():
 @app.route("/api/admin/users")
 @admin_required
 def api_admin_users():
-    db = load_users()
+    db = load_db()
     users = []
     for u in db.get("users", []):
         users.append({
@@ -743,12 +790,12 @@ def api_admin_set_plan():
     plan = (data.get("plan") or "free").strip()
     if plan not in PLANS:
         return jsonify({"success": False, "message": "Invalid plan"}), 400
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     u["plan"] = plan
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True})
 
 
@@ -757,12 +804,12 @@ def api_admin_set_plan():
 def api_admin_toggle_active():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     u["active"] = not u.get("active", True)
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True, "active": u["active"]})
 
 
@@ -771,12 +818,12 @@ def api_admin_toggle_active():
 def api_admin_delete_user():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     db["users"] = [x for x in db.get("users", []) if (x.get("username") or "").strip().lower() != username.lower()]
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True})
 
 
@@ -1290,7 +1337,7 @@ def api_ai_chat():
         return jsonify({"success": False, "message": "AI service currently unavailable"}), 503
     
     username = current_username()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     
     if not u and not is_admin_session():
@@ -1328,7 +1375,7 @@ def api_ai_chat():
         response = client.chat(model=model, prompt=full_prompt)
         
         ai_status["count"] += 1
-        save_users(db)
+        save_db(db)
         
         return jsonify({"success": True, "response": response})
     except Exception as e:
@@ -1377,7 +1424,7 @@ def admin_quickstats():
         elif s.get("status") in ("Installing", "Starting"):
             installing += 1
 
-    db = load_users()
+    db = load_db()
     total_users = len(db.get("users", []))
     active_users = sum(1 for u in db.get("users", []) if u.get("active", True))
     premium_users = sum(1 for u in db.get("users", []) if u.get("premium", False))
@@ -1498,32 +1545,48 @@ def run_log_cleaner():
 def cleanup_old_data():
     """حذف البيانات القديمة والغير نشطة"""
     try:
-        db = load_db()
         current_time = time.time()
-        
-        # حذف السيرفرات غير النشطة لأكثر من 30 يوم
-        if "servers" in db:
-            active_servers = []
-            for server in db["servers"]:
-                # حذف السيرفرات غير النشطة لأكثر من 30 يوم
-                if server.get("last_renewed") and (current_time - server["last_renewed"]) > 30 * 24 * 3600:
-                    server_folder = os.path.join(USERS_ROOT, server.get("folder", ""))
-                    if os.path.exists(server_folder):
-                        shutil.rmtree(server_folder, ignore_errors=True)
-                    logger.info(f"Deleted old server: {server.get('folder')}")
-                else:
-                    active_servers.append(server)
-            db["servers"] = active_servers
-        
-        # حذف المستخدمين غير النشطين لأكثر من 90 يوم
+
+        # 1. Cleanup Servers from Filesystem
+        if os.path.isdir(USERS_ROOT):
+            for owner in os.listdir(USERS_ROOT):
+                root = get_user_servers_root(owner)
+                if not os.path.isdir(root):
+                    continue
+                for folder in os.listdir(root):
+                    server_dir = get_server_dir(owner, folder)
+                    if not os.path.isdir(server_dir):
+                        continue
+                    meta = read_meta(owner, folder)
+                    last_renewed = meta.get("last_renewed", 0)
+                    if (current_time - last_renewed) > 30 * 24 * 3600:
+                        stop_proc(f"{owner}::{folder}")
+                        stop_proc(folder)
+                        shutil.rmtree(server_dir, ignore_errors=True)
+                        logger.info(f"Deleted old server: {owner}/{folder}")
+
+        # 2. Cleanup Users from Database
+        db = load_db()
         if "users" in db:
             active_users = []
             for user in db["users"]:
-                if user.get("last_active") and (current_time - user["last_active"]) > 90 * 24 * 3600:
-                    user_folder = os.path.join(USERS_ROOT, user.get("username", ""))
-                    if os.path.exists(user_folder):
-                        shutil.rmtree(user_folder, ignore_errors=True)
-                    logger.info(f"Deleted inactive user: {user.get('username')}")
+                # If last_active is missing, we use created_at or assume active
+                last_active = user.get("last_active")
+                if not last_active:
+                    # Try to parse created_at
+                    try:
+                        ca = user.get("created_at")
+                        if ca:
+                            last_active = time.mktime(time.strptime(ca, "%Y-%m-%d %H:%M:%S"))
+                    except:
+                        pass
+
+                if last_active and (current_time - last_active) > 90 * 24 * 3600:
+                    user_username = user.get("username")
+                    user_dir = os.path.join(USERS_ROOT, user_username)
+                    if os.path.exists(user_dir):
+                        shutil.rmtree(user_dir, ignore_errors=True)
+                    logger.info(f"Deleted inactive user: {user_username}")
                 else:
                     active_users.append(user)
             db["users"] = active_users
@@ -1574,64 +1637,22 @@ class Firewall:
 firewall = Firewall()
 
 
-# نظام الحميات (Subscription Plans)
-SUBSCRIPTION_PLANS = {
-    "free": {
-        "name": "Free",
-        "price": 0,
-        "max_bots": 3,
-        "max_mem_mb": 256,
-        "max_cpu_percent": 50,
-        "features": ["3 Bots", "256MB RAM", "Basic Support"]
-    },
-    "basic": {
-        "name": "Basic",
-        "price": 10,
-        "max_bots": 5,
-        "max_mem_mb": 512,
-        "max_cpu_percent": 70,
-        "features": ["5 Bots", "512MB RAM", "Priority Support", "Advanced Analytics"]
-    },
-    "pro": {
-        "name": "Pro",
-        "price": 25,
-        "max_bots": 10,
-        "max_mem_mb": 1024,
-        "max_cpu_percent": 80,
-        "features": ["10 Bots", "1GB RAM", "24/7 Support", "Advanced Analytics", "Custom Domain"]
-    },
-    "enterprise": {
-        "name": "Enterprise",
-        "price": 100,
-        "max_bots": 50,
-        "max_mem_mb": 4096,
-        "max_cpu_percent": 90,
-        "features": ["50 Bots", "4GB RAM", "Dedicated Support", "Advanced Analytics", "Custom Domain", "API Access", "White Label"]
-    }
-}
-
-
-def get_user_plan(username):
-    """الحصول على خطة المستخدم"""
-    db = load_db()
-    for user in db.get("users", []):
-        if user.get("username") == username:
-            return user.get("plan", "free")
-    return "free"
 
 
 def get_plan_limits(plan):
     """الحصول على حدود الخطة"""
-    return SUBSCRIPTION_PLANS.get(plan, SUBSCRIPTION_PLANS["free"])
+    return PLANS.get(plan, PLANS["free"])
 
 
 def check_plan_limits(username):
     """التحقق من حدود خطة المستخدم"""
-    plan = get_user_plan(username)
-    limits = get_plan_limits(plan)
+    limits = get_user_plan(username)
     
-    db = load_db()
-    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    user_servers_root = get_user_servers_root(username)
+    if os.path.exists(user_servers_root):
+        user_servers = [d for d in os.listdir(user_servers_root) if os.path.isdir(os.path.join(user_servers_root, d))]
+    else:
+        user_servers = []
     
     if len(user_servers) >= limits["max_bots"]:
         return False, f"You have reached the maximum number of bots ({limits['max_bots']}) for your {limits['name']} plan"
@@ -1644,23 +1665,26 @@ def check_plan_limits(username):
 @login_required
 def get_subscription_plans():
     """الحصول على جميع خطط الاشتراك"""
-    return jsonify({"success": True, "plans": SUBSCRIPTION_PLANS})
+    return jsonify({"success": True, "plans": PLANS})
 
 
 @app.route("/api/subscription/current", methods=["GET"])
 @login_required
 def get_current_subscription():
     """الحصول على خطة المستخدم الحالية"""
-    username = session.get("username")
-    plan = get_user_plan(username)
-    limits = get_plan_limits(plan)
+    username = current_username()
+    plan_name, limits = get_user_plan_info(username)
     
-    db = load_db()
-    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    # We count servers from the filesystem because the JSON DB doesn't track them reliably
+    user_servers_root = get_user_servers_root(username)
+    if os.path.exists(user_servers_root):
+        user_servers = [d for d in os.listdir(user_servers_root) if os.path.isdir(os.path.join(user_servers_root, d))]
+    else:
+        user_servers = []
     
     return jsonify({
         "success": True,
-        "plan": plan,
+        "plan": plan_name,
         "limits": limits,
         "usage": {
             "bots_used": len(user_servers),
@@ -1673,11 +1697,11 @@ def get_current_subscription():
 @login_required
 def upgrade_subscription():
     """ترقية خطة الاشتراك"""
-    username = session.get("username")
+    username = current_username()
     data = request.get_json()
     new_plan = data.get("plan")
     
-    if new_plan not in SUBSCRIPTION_PLANS:
+    if new_plan not in PLANS:
         return jsonify({"success": False, "message": "Invalid plan"}), 400
     
     db = load_db()
