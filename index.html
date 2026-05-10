@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>الذئب الابيض · OPERATIVE DASHBOARD</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.2/ace.js" type="text/javascript" charset="utf-8"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -1577,6 +1578,9 @@
 <body>
   <div class="notification-container" id="notificationContainer"></div>
   <div class="toast-container" id="toastBox" style="display:none"></div>
+  <div id="broadcastBar" style="display:none; background: linear-gradient(90deg, #ff9f0a, #ff3b30); color: white; text-align: center; padding: 10px; font-weight: 700; font-size: 14px; position: sticky; top: 0; z-index: 101;">
+    <span id="broadcastMsg"></span>
+  </div>
   <div class="topbar">
     <div class="topbar-content">
       <div class="brand" onclick="goHome()">
@@ -1842,6 +1846,7 @@
       <div class="tab-group">
         <div class="tab active" id="tabConsole" onclick="switchTab('console')">CONSOLE / موجه الأوامر</div>
         <div class="tab" id="tabFiles" onclick="switchTab('files')">FILE SYSTEM / الملفات</div>
+        <div class="tab" id="tabEnv" onclick="switchTab('env')">SECRETS / المتغيرات</div>
       </div>
     </div>
 
@@ -1863,6 +1868,7 @@
             تشغيل</button>
           <button class="btn btn-danger" style="width:100%; padding:14px;" onclick="srvAction('stop')">HALT /
             إيقاف</button>
+          <button class="btn" style="width:100%; padding:14px; color: var(--success); background: rgba(50, 215, 75, 0.1);" onclick="downloadBackup()">BACKUP / نسخة احتياطية</button>
 
           <div class="side-card">
             <div class="stat-row">
@@ -1897,11 +1903,34 @@
       </div>
     </div>
 
+    <div id="viewEnv" style="display:none" class="side-card">
+      <div style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 8px;">Environment Variables / المتغيرات البيئية</h3>
+        <p style="color: var(--text-dim); font-size: 13px;">Manage secrets and configuration for your bot. Changes require a restart to take effect.</p>
+      </div>
+
+      <div id="envList" style="margin-bottom: 24px;">
+        <!-- Env vars here -->
+      </div>
+
+      <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+        <h4 style="margin-bottom: 12px; font-size: 14px;">Add New Variable / إضافة متغير جديد</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input type="text" id="envKey" placeholder="KEY (e.g. BOT_TOKEN)" style="flex: 1; min-width: 150px; margin-bottom: 0;" class="fm-search">
+          <input type="text" id="envVal" placeholder="VALUE" style="flex: 2; min-width: 200px; margin-bottom: 0;" class="fm-search">
+          <button class="btn btn-primary" onclick="addEnvVar()">+ ADD / إضافة</button>
+        </div>
+      </div>
+    </div>
+
     <div id="viewFiles" style="display:none" class="file-manager">
       <div class="fm-header">
         <div class="fm-path" id="pathBar"></div>
         <div class="fm-toolbar">
-          <input type="text" class="fm-search" placeholder="Search files... / بحث..." id="fmSearch" onkeyup="filterFiles()">
+          <div style="display: flex; gap: 8px; flex: 1;">
+            <input type="text" class="fm-search" placeholder="Search current... / بحث..." id="fmSearch" onkeyup="filterFiles()">
+            <button class="btn" onclick="globalSearch()" title="Recursive Search">🔍 DEEP</button>
+          </div>
           <div class="fm-view-toggle">
             <button class="fm-view-btn active" onclick="setFileView('list')">📋</button>
             <button class="fm-view-btn" onclick="setFileView('grid')">⊞</button>
@@ -1945,13 +1974,11 @@
       </div>
     </div>
     <div class="editor-body">
-      <div class="editor-sidebar" id="fileTree">
+      <div class="editor-sidebar" id="fileTree" style="display: none;">
         <div class="file-tree-item active">📄 main.py</div>
       </div>
       <div class="editor-main">
-        <div class="code-editor-wrapper">
-          <textarea class="code-editor" id="advancedCodeEditor" spellcheck="false" placeholder="Start coding..."></textarea>
-        </div>
+        <div class="code-editor-wrapper" id="aceEditor"></div>
         <div class="editor-statusbar">
           <div class="editor-status-item">
             <span id="cursorPosition">Ln 1, Col 1</span>
@@ -2024,12 +2051,24 @@
             const usage = data.ai_usage;
             document.getElementById('aiUsageTxt').textContent = `AI REQUESTS TODAY: ${usage.count || 0} / 20`;
           }
+
+          if (data.stats) {
+            document.getElementById('statServers').textContent = data.stats.total_engines;
+            document.getElementById('statRunning').textContent = data.stats.running_engines;
+            document.getElementById('statMemory').textContent = data.stats.memory_used_mb + ' MB';
+
+            const hours = Math.floor(data.stats.uptime_seconds / 3600);
+            document.getElementById('statUptime').textContent = hours + 'h';
+
+            if (data.stats.activity_chart) {
+                generateActivityChart(data.stats.activity_chart);
+            }
+          }
         }
       });
 
       loadAds();
-      updateStats(d.servers || []);
-      generateActivityChart();
+      loadUserActivities();
 
       (d.servers || []).forEach(s => {
         const div = document.createElement('div');
@@ -2068,6 +2107,15 @@
     async function loadAds() {
       const res = await fetch('/api/ads');
       const data = await res.json();
+
+      const bBar = document.getElementById('broadcastBar');
+      if (data.broadcast) {
+          bBar.style.display = 'block';
+          document.getElementById('broadcastMsg').textContent = data.broadcast;
+      } else {
+          bBar.style.display = 'none';
+      }
+
       const adBox = document.getElementById('adPanel');
       if (data.current_ad) {
         adBox.style.display = 'block';
@@ -2176,9 +2224,19 @@
     function switchTab(t) {
       document.getElementById('tabConsole').classList.toggle('active', t === 'console');
       document.getElementById('tabFiles').classList.toggle('active', t === 'files');
+      document.getElementById('tabEnv').classList.toggle('active', t === 'env');
+
       document.getElementById('viewConsole').style.display = t === 'console' ? 'block' : 'none';
       document.getElementById('viewFiles').style.display = t === 'files' ? 'block' : 'none';
-      if (t === 'console') startPolling(); else { clearInterval(poll); loadFiles(); }
+      document.getElementById('viewEnv').style.display = t === 'env' ? 'block' : 'none';
+
+      if (t === 'console') {
+          startPolling();
+      } else {
+          clearInterval(poll);
+          if (t === 'files') loadFiles();
+          if (t === 'env') loadEnvVars();
+      }
     }
 
     async function startPolling() {
@@ -2283,103 +2341,188 @@
       showNotification(titles[type] || 'Info', msg, type);
     }
 
-    function updateStats(servers) {
-      const total = servers.length;
-      const running = servers.filter(s => s.status === 'Running').length;
-      const memory = servers.reduce((sum, s) => {
-        if (s.mem) {
-          const match = s.mem.match(/([\d.]+)\s*MB/i);
-          if (match) return sum + parseFloat(match[1]);
+    let currentEnv = {};
+    async function loadEnvVars() {
+      try {
+        const r = await fetch(`/api/server/env/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`);
+        const d = await r.json();
+        if (d.success) {
+          currentEnv = d.env || {};
+          renderEnvList();
         }
-        return sum;
-      }, 0);
-
-      document.getElementById('statServers').textContent = total;
-      document.getElementById('statRunning').textContent = running;
-      document.getElementById('statMemory').textContent = memory.toFixed(1) + ' MB';
-      document.getElementById('statUptime').textContent = Math.floor(Math.random() * 24 + 1) + 'h';
+      } catch (e) { console.error(e); }
     }
 
-    function generateActivityChart() {
+    function renderEnvList() {
+      const cont = document.getElementById('envList');
+      cont.innerHTML = '';
+
+      const entries = Object.entries(currentEnv);
+      if (entries.length === 0) {
+          cont.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-dim); border: 1px dashed var(--border); border-radius: 12px;">No environment variables set.</div>';
+          return;
+      }
+
+      entries.forEach(([k, v]) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px;';
+          div.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
+              <code style="color: var(--primary); font-weight: 700; min-width: 120px;">${escapeHtml(k)}</code>
+              <code style="color: var(--text-dim); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; flex: 1; word-break: break-all;">${escapeHtml(v)}</code>
+            </div>
+            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteEnvVar('${escapeAttr(k)}')">✕ REMOVE</button>
+          `;
+          cont.appendChild(div);
+      });
+    }
+
+    async function addEnvVar() {
+      const k = document.getElementById('envKey').value.trim();
+      const v = document.getElementById('envVal').value.trim();
+      if (!k || !v) return toast('Key and Value required', 'error');
+
+      currentEnv[k] = v;
+      await saveEnvVars();
+      document.getElementById('envKey').value = '';
+      document.getElementById('envVal').value = '';
+    }
+
+    async function deleteEnvVar(k) {
+      if (!confirm(`Delete variable ${k}?`)) return;
+      delete currentEnv[k];
+      await saveEnvVars();
+    }
+
+    function downloadBackup() {
+      const url = `/api/server/backup/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`;
+      window.location.href = url;
+      toast('Backup initializing...', 'success');
+    }
+
+    async function saveEnvVars() {
+      try {
+        const r = await fetch(`/api/server/env/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ env: currentEnv })
+        });
+        const d = await r.json();
+        if (d.success) {
+          renderEnvList();
+          toast('Variable saved', 'success');
+        }
+      } catch (e) { toast('Failed to save', 'error'); }
+    }
+
+    async function loadUserActivities() {
+      try {
+        const r = await fetch('/api/user/activities');
+        const d = await r.json();
+        if (d.success) {
+          const cont = document.getElementById('userActivityLog');
+          if (!cont) return;
+          cont.innerHTML = d.activities.map(a => `
+            <div class="activity-item">
+              <div class="activity-icon">${a.action.includes('Created') ? '🚀' : a.action.includes('Edited') ? '📝' : '⚡'}</div>
+              <div class="activity-content">
+                <div class="activity-title">${escapeHtml(a.action)}</div>
+                <div class="activity-time">${a.timestamp}</div>
+              </div>
+              <div class="activity-status ${a.status}">${a.status.toUpperCase()}</div>
+            </div>
+          `).join('') || '<div style="padding:20px; text-align:center; color:var(--text-dim)">No activity found</div>';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function generateActivityChart(data) {
       const chart = document.getElementById('activityChart');
+      if (!chart) return;
       chart.innerHTML = '';
       
-      const data = [45, 72, 38, 91, 65, 82, 58];
-      const max = Math.max(...data);
+      const chartData = data || [0, 0, 0, 0, 0, 0, 0];
+      const max = Math.max(...chartData, 5); // Use 5 as minimum max for better scaling
       
-      data.forEach((value, index) => {
+      chartData.forEach((value) => {
         const bar = document.createElement('div');
         bar.className = 'chart-bar';
         const height = (value / max) * 100;
-        bar.style.height = height + '%';
+        bar.style.height = Math.max(height, 5) + '%';
         bar.setAttribute('data-value', value);
         chart.appendChild(bar);
       });
     }
 
-    // Advanced Editor Functions
+    // Advanced Editor Functions (Ace Editor Integration)
+    let aceInstance = null;
+    function initAce() {
+        if (aceInstance) return;
+        aceInstance = ace.edit("aceEditor");
+        aceInstance.setTheme("ace/theme/dracula");
+        aceInstance.session.setMode("ace/mode/python");
+        aceInstance.setOptions({
+            fontSize: "14px",
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            showPrintMargin: false,
+            useSoftTabs: true,
+            tabSize: 4
+        });
+
+        aceInstance.session.on('change', updateEditorStats);
+        aceInstance.selection.on('changeCursor', updateCursorPosition);
+    }
+
     function openAdvancedEditor() {
+      initAce();
       const editor = document.getElementById('advancedEditor');
       const codeArea = document.getElementById('ed-area');
-      const advancedEditor = document.getElementById('advancedCodeEditor');
       
       document.getElementById('advancedEditorTitle').textContent = currentFile || 'Untitled';
-      advancedEditor.value = codeArea.value;
-      editor.classList.add('active');
       
+      // Auto-detect mode
+      const ext = (currentFile || "").split('.').pop().toLowerCase();
+      const modes = { 'py': 'python', 'js': 'javascript', 'php': 'php', 'html': 'html', 'css': 'css', 'json': 'json', 'txt': 'text' };
+      aceInstance.session.setMode(`ace/mode/${modes[ext] || 'text'}`);
+
+      aceInstance.setValue(codeArea.value, -1);
+      editor.classList.add('active');
       updateEditorStats();
-      advancedEditor.addEventListener('input', updateEditorStats);
-      advancedEditor.addEventListener('click', updateCursorPosition);
-      advancedEditor.addEventListener('keyup', updateCursorPosition);
     }
 
     function closeAdvancedEditor() {
       const editor = document.getElementById('advancedEditor');
       const codeArea = document.getElementById('ed-area');
-      const advancedEditor = document.getElementById('advancedCodeEditor');
-      
-      codeArea.value = advancedEditor.value;
+      codeArea.value = aceInstance.getValue();
       editor.classList.remove('active');
     }
 
     function saveAdvancedFile() {
-      const advancedEditor = document.getElementById('advancedCodeEditor');
-      document.getElementById('ed-area').value = advancedEditor.value;
+      document.getElementById('ed-area').value = aceInstance.getValue();
       saveFile();
-      showNotification('Success', 'File saved successfully', 'success');
     }
 
     function formatCode() {
-      const editor = document.getElementById('advancedCodeEditor');
-      // Simple indentation formatting
-      let code = editor.value;
-      code = code.replace(/\n\s*\n/g, '\n'); // Remove extra empty lines
-      editor.value = code;
-      showNotification('Formatted', 'Code formatted', 'info');
+        aceInstance.selectAll();
+        // Ace doesn't have built-in beautifier for all languages, but we can do simple things
+        toast('Beautifying...', 'info');
     }
 
     function toggleMinimap() {
-      showNotification('Minimap', 'Minimap feature coming soon', 'info');
+        const show = !aceInstance.getOption("showGutter");
+        aceInstance.setOption("showGutter", true); // Ensure gutter is always on
+        showNotification('Minimap', 'Toggle Not Supported', 'info');
     }
 
     function updateEditorStats() {
-      const editor = document.getElementById('advancedCodeEditor');
-      const content = editor.value;
-      const lines = content.split('\n').length;
-      const chars = content.length;
-      
-      document.getElementById('fileSize').textContent = chars + ' bytes';
+      const content = aceInstance.getValue();
+      document.getElementById('fileSize').textContent = content.length + ' bytes';
     }
 
     function updateCursorPosition() {
-      const editor = document.getElementById('advancedCodeEditor');
-      const pos = editor.selectionStart;
-      const text = editor.value.substring(0, pos);
-      const lines = text.split('\n');
-      const line = lines.length;
-      const col = lines[lines.length - 1].length + 1;
-      
-      document.getElementById('cursorPosition').textContent = `Ln ${line}, Col ${col}`;
+      const pos = aceInstance.getCursorPosition();
+      document.getElementById('cursorPosition').textContent = `Ln ${pos.row + 1}, Col ${pos.column + 1}`;
     }
 
     // Advanced File Manager Functions
@@ -2400,6 +2543,33 @@
         const text = item.textContent.toLowerCase();
         item.closest('tr').style.display = text.includes(search) ? '' : 'none';
       });
+    }
+
+    async function globalSearch() {
+      const q = document.getElementById('fmSearch').value.trim();
+      if (!q) return toast('Enter search query', 'info');
+
+      try {
+        const r = await fetch(`/api/server/search/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?q=${encodeURIComponent(q)}`);
+        const d = await r.json();
+        if (d.success) {
+          const t = document.getElementById('fileList');
+          t.innerHTML = d.results.map(i => `
+            <tr>
+              <td>
+                <div class="fm-name" onclick="${i.type === 'dir' ? `jumpPath('${escapeAttr(i.path)}')` : `openEditor('${escapeAttr(i.path)}')`}">
+                  ${i.type === 'dir' ? '📁' : '📄'} ${escapeHtml(i.name)}
+                  <span style="font-size: 10px; color: var(--text-dim); margin-left: 10px;">in ${escapeHtml(i.path)}</span>
+                </div>
+              </td>
+              <td style="color:var(--text-dim)">${i.type.toUpperCase()}</td>
+              <td><span style="font-size: 11px; color: var(--primary);">SEARCH RESULT</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="3" style="text-align:center">No matches found</td></tr>';
+          document.getElementById('pathBar').innerHTML = 'SEARCH RESULTS / نتائج البحث';
+          document.getElementById('btnBack').style.display = 'inline-flex';
+        }
+      } catch (e) { toast('Search failed', 'error'); }
     }
 
     function handleDragOver(e) {
@@ -2594,11 +2764,42 @@
     async function changeStartup() { openM("Set Entrypoint", currentSrv.startup_file, async v => { await fetch(`/server/set-startup/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: v }) }); currentSrv.startup_file = v; document.getElementById('mainFileTxt').textContent = v; closeM(); toast('Entrypoint updated', 'success'); }); }
     async function deleteServer() { if (confirm("ABSOLUTE DATA DESTRUCTION?")) { await fetch(`/server/delete/${encodeURIComponent(currentSrv.key || currentSrv.folder)}`, { method: 'POST' }); goHome(); toast('Server deleted', 'success'); } }
 
-    document.getElementById('newBtn').onclick = () => openM("INIT NEW ENGINE", "", async v => {
-      const r = await fetch('/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: v }) });
-      const d = await r.json();
-      if (d.success) { closeM(); loadServers(); toast('Engine created', 'success'); } else toast(d.message, 'error');
-    });
+    document.getElementById('newBtn').onclick = async () => {
+        const res = await fetch('/api/templates');
+        const data = await res.json();
+        let options = '<option value="">None / فارغ</option>';
+        if (data.success) {
+            for (const [id, name] of Object.entries(data.templates)) {
+                options += `<option value="${id}">${name}</option>`;
+            }
+        }
+
+        const tplHtml = `
+            <div style="margin-top: 20px; text-align: left;">
+                <label style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px; display: block;">TEMPLATE / قالب (اختياري):</label>
+                <select id="mTemplate" class="settings-select" style="margin-bottom: 0;">
+                    ${options}
+                </select>
+            </div>
+        `;
+
+        openM("INIT NEW ENGINE", "", async v => {
+            const template = document.getElementById('mTemplate').value;
+            const r = await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: v, template })
+            });
+            const d = await r.json();
+            if (d.success) {
+                closeM();
+                loadServers();
+                toast('Engine created', 'success');
+            } else toast(d.message, 'error');
+        });
+
+        document.getElementById('mIn').insertAdjacentHTML('afterend', tplHtml);
+    };
 
     document.addEventListener('DOMContentLoaded', () => { loadServers(); });
     setInterval(() => { if (document.getElementById('homeView').style.display !== 'none') loadServers(); }, 10000);

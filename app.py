@@ -13,7 +13,7 @@ import logging
 import requests
 # import dns_fix
 import psutil
-from flask import Flask, send_from_directory, request, jsonify, redirect, session
+from flask import Flask, send_from_directory, request, jsonify, redirect, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
@@ -37,6 +37,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger('hostbot')
 
+START_TIME = time.time()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 USERS_ROOT = os.path.join(BASE_DIR, "USERS")
@@ -82,8 +83,11 @@ def add_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io; object-src 'none';"
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io https://cdnjs.cloudflare.com; object-src 'none';"
     response.headers['Referrer-Policy'] = 'strict-origin-when-downgrade'
+    response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
+    response.headers['X-Download-Options'] = 'noopen'
+    # حظر المحاكاة والبيانات الوهمية عبر منع التضمين في الـ iFrames
     return response
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
@@ -145,7 +149,7 @@ def log_append(key: str, text: str):
         pass
 
 
-def load_users():
+def load_db():
     if not os.path.exists(USERS_DB):
         return {"users": []}
     try:
@@ -155,11 +159,31 @@ def load_users():
         return {"users": []}
 
 
-def save_users(db):
+def save_db(db):
     tmp = USERS_DB + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2)
     os.replace(tmp, USERS_DB)
+
+
+def log_activity(username: str, action: str, status: str = "success"):
+    try:
+        db = load_db()
+        u = find_user(db, username)
+        if not u:
+            return
+
+        activities = u.setdefault("activities", [])
+        activities.insert(0, {
+            "action": action,
+            "status": status,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        # Keep only the last 20 activities
+        u["activities"] = activities[:20]
+        save_db(db)
+    except Exception as e:
+        logger.error(f"Failed to log activity for {username}: {e}")
 
 
 def find_user(db, username: str):
@@ -181,22 +205,98 @@ def current_username():
 
 
 PLANS = {
-    "free": {"label": "Free Tier", "max_bots": 1, "max_mem_mb": 256, "max_disk_mb": 100},
-    "pro": {"label": "Silver Tier", "max_bots": 3, "max_mem_mb": 512, "max_disk_mb": 1000},
-    "enterprise": {"label": "Gold Tier", "max_bots": 10, "max_mem_mb": 1024, "max_disk_mb": 5000},
+    "free": {
+        "name": "Unlimited Free",
+        "label": "Unlimited Free",
+        "price": 0,
+        "max_bots": 100,
+        "max_mem_mb": 4096,
+        "max_disk_mb": 10240,
+        "max_cpu_percent": 80,
+        "features": ["100 Bots", "4GB RAM", "10GB NVMe", "AI Access"]
+    },
+    "basic": {
+        "name": "Basic",
+        "label": "Basic Tier",
+        "price": 10,
+        "max_bots": 150,
+        "max_mem_mb": 8192,
+        "max_disk_mb": 20480,
+        "max_cpu_percent": 90,
+        "features": ["150 Bots", "8GB RAM", "Priority Support"]
+    },
+    "pro": {
+        "name": "Pro",
+        "label": "Silver Tier",
+        "price": 25,
+        "max_bots": 10,
+        "max_mem_mb": 1024,
+        "max_disk_mb": 1000,
+        "max_cpu_percent": 80,
+        "features": ["10 Bots", "1GB RAM", "24/7 Support", "Advanced Analytics", "Custom Domain"]
+    },
+    "enterprise": {
+        "name": "Enterprise",
+        "label": "Gold Tier",
+        "price": 100,
+        "max_bots": 50,
+        "max_mem_mb": 4096,
+        "max_disk_mb": 5000,
+        "max_cpu_percent": 90,
+        "features": ["50 Bots", "4GB RAM", "Dedicated Support", "Advanced Analytics", "Custom Domain", "API Access", "White Label"]
+    }
 }
+
+# --- TEMPLATES SYSTEM ---
+TEMPLATES = {
+    "telegram": {
+        "name": "Telegram Bot (Python)",
+        "files": {
+            "main.py": "import telebot\nimport os\n\nTOKEN = os.getenv('BOT_TOKEN', 'YOUR_TOKEN_HERE')\nbot = telebot.TeleBot(TOKEN)\n\n@bot.message_handler(commands=['start', 'help'])\ndef send_welcome(message):\n\tbot.reply_to(message, 'Howdy, how are you doing?')\n\nprint('Bot started...')\nbot.infinity_polling()",
+            "requirements.txt": "pyTelegramBotAPI"
+        },
+        "startup": "main.py"
+    },
+    "discord": {
+        "name": "Discord Bot (Python)",
+        "files": {
+            "bot.py": "import discord\nimport os\n\nTOKEN = os.getenv('BOT_TOKEN', 'YOUR_TOKEN_HERE')\nclient = discord.Client(intents=discord.Intents.default())\n\n@client.event\nasync function on_ready():\n    print(f'Logged in as {client.user}')\n\n@client.event\nasync function on_message(message):\n    if message.author == client.user: return\n    if message.content == '!hello':\n        await message.channel.send('Hello from White Wolf!')\n\nclient.run(TOKEN)",
+            "requirements.txt": "discord.py"
+        },
+        "startup": "bot.py"
+    },
+    "flask": {
+        "name": "Flask Web App",
+        "files": {
+            "app.py": "from flask import Flask\napp = Flask(__name__)\n\n@app.route('/')\ndef hello():\n    return 'Hello from White Wolf Hosting!'\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=8080)",
+            "requirements.txt": "flask"
+        },
+        "startup": "app.py"
+    },
+    "php_telegram": {
+        "name": "PHP Telegram Bot",
+        "files": {
+            "bot.php": "<?php\n$token = getenv('BOT_TOKEN') ?: 'YOUR_TOKEN';\n$api = \"https://api.telegram.org/bot$token/\";\n$update = json_decode(file_get_contents('php://input'), true);\nif (!$update) die('No input');\n$chat_id = $update['message']['chat']['id'];\n$text = $update['message']['text'];\nif ($text == '/start') {\n    file_get_contents($api . \"sendMessage?chat_id=$chat_id&text=\" . urlencode(\"Hello from White Wolf PHP!\"));\n}\n",
+            "index.php": "<?php echo \"Bot is alive!\"; ?>"
+        },
+        "startup": "index.php"
+    }
+}
+
 
 # --- ADS SYSTEM ---
 ADS_FILE = os.path.join(DATA_DIR, "ads.json")
 
 def load_ads():
     if not os.path.exists(ADS_FILE):
-        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c", "broadcast": ""}
     try:
         with open(ADS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            d = json.load(f)
+            if "broadcast" not in d: d["broadcast"] = ""
+            return d
     except:
-        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c", "broadcast": ""}
 
 def save_ads(data):
     with open(ADS_FILE, "w", encoding="utf-8") as f:
@@ -206,13 +306,23 @@ BOT_RENEW_DAYS = 4
 AI_DAILY_LIMIT = 20
 
 
-def get_user_plan(username: str) -> dict:
-    db = load_users()
+def get_user_plan_info(username: str):
+    db = load_db()
     u = find_user(db, username)
     if not u:
-        return PLANS["free"]
+        return "free", PLANS["free"]
     plan_name = u.get("plan", "free")
-    return PLANS.get(plan_name, PLANS["free"])
+    return plan_name, PLANS.get(plan_name, PLANS["free"])
+
+
+def get_user_plan_name(username: str) -> str:
+    plan_name, _ = get_user_plan_info(username)
+    return plan_name
+
+
+def get_user_plan(username: str) -> dict:
+    _, plan_info = get_user_plan_info(username)
+    return plan_info
 
 
 def get_user_limit(username: str) -> int:
@@ -330,6 +440,7 @@ def ensure_meta(owner: str, folder: str):
         "startup_file": "", 
         "owner": owner, 
         "banned": False,
+        "env": {}, # Custom Environment Variables
         "last_renewed": time.time() # Bot needs renewal every 4 days
     }
     if not os.path.exists(meta_path):
@@ -439,10 +550,20 @@ def ensure_requirements_installed(owner: str, folder: str):
         return False
 
 
-def get_subprocess_env():
+def get_subprocess_env(owner: str, folder: str):
     env = os.environ.copy()
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONDONTWRITEBYTECODE'] = '1'
+
+    # Load custom environment variables from meta.json
+    try:
+        meta = read_meta(owner, folder)
+        custom_env = meta.get("env", {})
+        for k, v in custom_env.items():
+            env[str(k)] = str(v)
+    except:
+        pass
+
     return env
 
 
@@ -507,13 +628,14 @@ while True:
     log_path = os.path.join(server_dir, "server.log")
     log_file = open(log_path, "a", encoding="utf-8", errors="ignore")
 
+    env = get_subprocess_env(owner, folder)
     if startup_file.lower().endswith(".php"):
         proc = subprocess.Popen(
             ["php", startup_file],
             cwd=server_dir,
             stdout=log_file,
             stderr=log_file,
-            env=get_subprocess_env(),
+            env=env,
         )
     else:
         proc = subprocess.Popen(
@@ -521,7 +643,7 @@ while True:
             cwd=server_dir,
             stdout=log_file,
             stderr=log_file,
-            env=get_subprocess_env(),
+            env=env,
         )
     return proc, log_file
 
@@ -608,13 +730,14 @@ def api_login():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
+    fingerprint = data.get("fingerprint")
 
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         session["user"] = {"username": ADMIN_USERNAME, "is_admin": True}
         session.permanent = True
         return jsonify({"success": True, "is_admin": True})
 
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
@@ -623,34 +746,66 @@ def api_login():
     if not check_password_hash(u.get("password_hash", ""), password):
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
+    if fingerprint and u.get("fingerprint") and u.get("fingerprint") != fingerprint:
+        # السماح بالدخول ولكن مع تحديث البصمة أو تسجيل تنبيه
+        # لغرض الصرامة يمكن منعه، ولكن هنا سنحدث البصمة إذا لم تكن موجودة
+        pass
+
+    if fingerprint and not u.get("fingerprint"):
+        u["fingerprint"] = fingerprint
+        save_db(db)
+
     session["user"] = {"username": u.get("username"), "is_admin": False}
     session.permanent = True
     ensure_user_dirs(u.get("username"))
     return jsonify({"success": True, "is_admin": False})
 
 
-import smtplib
-DISPOSABLE_DOMAINS = [
-    "tempmail.com", "10minutemail.com", "guerrillamail.com", 
-    "mailinator.com", "yopmail.com", "dropmail.me", "mohmal.com", 
-    "maildrop.cc", "dispostable.com", "temp-mail.org", "nada.ltd"
-]
 
 def get_client_ip():
     if request.headers.get('X-Forwarded-For'):
         return request.headers.get('X-Forwarded-For').split(',')[0].strip()
     return request.remote_addr or ""
 
-# OTP SYSTEM REMOVED
+
+def check_ip_security(ip):
+    """
+    التحقق من أمان الـ IP: منع VPN، Proxy، وحظر الكيان الصهيوني.
+    """
+    if ip in ('127.0.0.1', '::1', '0.0.0.0'):
+        return True, "Local"
+
+    try:
+        # استخدام API خارجي للتحقق من بيانات الـ IP
+        # ملاحظة: في بيئة الإنتاج يفضل استخدام اشتراك مدفوع أو قاعدة بيانات محلية مثل GeoIP
+        res = requests.get(f"https://ip-api.com/json/{ip}?fields=status,message,countryCode,proxy,hosting,vpn", timeout=5)
+        data = res.json()
+
+        if data.get("status") == "fail":
+            return True, "Unknown" # السماح في حال فشل الـ API مؤقتاً لتجنب تعطل الموقع
+
+        # حظر الكيان الصهيوني
+        if data.get("countryCode") == "IL":
+            return False, "Access denied from this region."
+
+        # منع VPN و Proxy
+        if data.get("proxy") is True or data.get("vpn") is True or data.get("hosting") is True:
+            return False, "VPN/Proxy/Hosting connections are not allowed. Please use a direct residential connection."
+
+        return True, data.get("countryCode")
+    except Exception as e:
+        logger.error(f"IP Security check failed for {ip}: {e}")
+        return True, "Check Failed"
 
 
-@app.route("/api/auth/register-otp", methods=["POST"])
+@app.route("/api/auth/register", methods=["POST"])
 @rate_limited
-def api_register_otp():
+def api_register():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
     email = (data.get("email") or "").strip()
+    fingerprint = data.get("fingerprint")
 
     # Email validation removed - site fully open
     # if not email or '@' not in email:
@@ -669,14 +824,16 @@ def api_register_otp():
     if username.lower() == ADMIN_USERNAME.lower():
         return jsonify({"success": False, "message": "Username not available"}), 400
 
-    db = load_users()
+    db = load_db()
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
-    # Email duplicate check removed - site fully open
-    # for u in db.get("users", []):
-    #     if u.get("email") == email:
-    #         return jsonify({"success": False, "message": "Email already in use"}), 409
+    # فرض قاعدة حساب واحد لكل جهاز
+    if fingerprint:
+        for u in db.get("users", []):
+            if u.get("fingerprint") == fingerprint:
+                return jsonify({"success": False, "message": "You already have an account from this device."}), 403
+
 
     client_ip = get_client_ip()
     new_user = {
@@ -686,16 +843,18 @@ def api_register_otp():
         "active": True,
         "plan": "free",
         "ip": client_ip,
+        "fingerprint": fingerprint,
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     db.setdefault("users", []).append(new_user)
-    save_users(db)
+    save_db(db)
     logger.info(f"New user registered: {username} from IP: {client_ip}")
 
     session["user"] = {"username": username, "is_admin": False}
     session.permanent = True
     ensure_user_dirs(username)
-    return jsonify({"success": True, "skip_otp": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
+    log_activity(username, "Registered new account")
+    return jsonify({"success": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
 
 
 # Legacy route removed
@@ -705,10 +864,40 @@ def api_register_otp():
 @login_required
 def api_user_profile():
     username = current_username()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
-    plan_name = "admin" if is_admin_session() else (u.get("plan", "free") if u else "free")
-    plan_info = PLANS.get(plan_name, PLANS["free"])
+    plan_name, plan_info = get_user_plan_info(username)
+
+    # Calculate real-time stats
+    user_servers = list_servers_for_user(username)
+    running_count = sum(1 for s in user_servers if s.get("status") == "Running")
+
+    # Activity counts for the last 7 days
+    from datetime import datetime, timedelta
+    activity_stats = [0] * 7
+    now = datetime.now()
+    if u and "activities" in u:
+        for act in u["activities"]:
+            try:
+                act_date = datetime.strptime(act["timestamp"], "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - act_date.date()).days
+                if 0 <= diff < 7:
+                    activity_stats[6 - diff] += 1
+            except:
+                continue
+
+    total_mem = 0
+    for s in user_servers:
+        key = s.get("key")
+        proc_tuple = running_procs.get(key)
+        if proc_tuple:
+            proc, _ = proc_tuple
+            try:
+                p = psutil.Process(proc.pid)
+                total_mem += p.memory_info().rss / 1024 / 1024
+            except:
+                pass
+
     return jsonify({
         "success": True,
         "username": username,
@@ -716,14 +905,37 @@ def api_user_profile():
         "plan": plan_name,
         "plan_label": plan_info.get("label", plan_name.title()),
         "max_bots": get_user_limit(username),
-        "max_mem_mb": get_user_mem_limit(username)
+        "max_mem_mb": get_user_mem_limit(username),
+        "stats": {
+            "total_engines": len(user_servers),
+            "running_engines": running_count,
+            "memory_used_mb": round(total_mem, 1),
+            "activity_chart": activity_stats,
+            "uptime_seconds": int(time.time() - START_TIME)
+        },
+        "ai_usage": u.get("ai_usage", {"count": 0}) if u else {"count": 0}
+    })
+
+
+@app.route("/api/user/activities")
+@login_required
+def api_user_activities():
+    username = current_username()
+    db = load_db()
+    u = find_user(db, username)
+    if not u:
+        return jsonify({"success": False, "message": "User not found"}), 404
+
+    return jsonify({
+        "success": True,
+        "activities": u.get("activities", [])
     })
 
 
 @app.route("/api/admin/users")
 @admin_required
 def api_admin_users():
-    db = load_users()
+    db = load_db()
     users = []
     for u in db.get("users", []):
         users.append({
@@ -743,12 +955,12 @@ def api_admin_set_plan():
     plan = (data.get("plan") or "free").strip()
     if plan not in PLANS:
         return jsonify({"success": False, "message": "Invalid plan"}), 400
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     u["plan"] = plan
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True})
 
 
@@ -757,12 +969,12 @@ def api_admin_set_plan():
 def api_admin_toggle_active():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     u["active"] = not u.get("active", True)
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True, "active": u["active"]})
 
 
@@ -771,12 +983,12 @@ def api_admin_toggle_active():
 def api_admin_delete_user():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     if not u:
         return jsonify({"success": False, "message": "User not found"}), 404
     db["users"] = [x for x in db.get("users", []) if (x.get("username") or "").strip().lower() != username.lower()]
-    save_users(db)
+    save_db(db)
     return jsonify({"success": True})
 
 
@@ -843,12 +1055,19 @@ def servers():
     return jsonify({"success": True, "servers": list_servers_for_user(current_username())})
 
 
+@app.route("/api/templates")
+@login_required
+def api_get_templates():
+    return jsonify({"success": True, "templates": {k: v["name"] for k, v in TEMPLATES.items()}})
+
+
 @app.route("/add", methods=["POST"])
 @login_required
 @rate_limited
 def add_server():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
+    template_id = data.get("template")
     folder = sanitize_folder_name(name)
     if not folder:
         return jsonify({"success": False, "message": "Invalid server name"}), 400
@@ -877,11 +1096,25 @@ def add_server():
         "display_name": name or folder,
         "startup_file": "",
         "owner": owner,
-        "banned": False
+        "banned": False,
+        "env": {}
     }
+
+    # Apply Template
+    if template_id and template_id in TEMPLATES:
+        tpl = TEMPLATES[template_id]
+        meta["startup_file"] = tpl["startup"]
+        for fname, content in tpl["files"].items():
+            try:
+                with open(os.path.join(target, fname), "w", encoding="utf-8") as f:
+                    f.write(content)
+            except:
+                pass
+
     write_meta(owner, folder, meta)
 
     set_state(folder if not is_admin_session() else f"{owner}::{folder}", "Offline")
+    log_activity(owner, f"Created engine: {name}")
 
     if is_admin_session():
         return jsonify({"success": True, "servers": list_all_servers_for_admin()})
@@ -999,6 +1232,7 @@ def server_action(key, act):
 
     t = threading.Thread(target=background_start, args=(key, owner, folder, startup), daemon=True)
     t.start()
+    log_activity(owner, f"{act.capitalize()} engine: {folder}")
     return jsonify({"success": True})
 
 
@@ -1115,6 +1349,7 @@ def file_save(key):
     try:
         with open(full, "w", encoding="utf-8") as f:
             f.write(content)
+        log_activity(owner, f"Edited file: {file_rel}")
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -1197,6 +1432,7 @@ def file_upload(key):
     os.makedirs(base_dir, exist_ok=True)
 
     owner, folder = parse_server_key(key, allow_admin=True)
+    log_activity(owner, f"Uploaded {len(files)} file(s) to {folder}")
     server_dir = get_server_dir(owner, folder)
     current_size_mb = get_dir_size(server_dir) / 1024 / 1024
     disk_limit_mb = get_user_disk_limit(owner)
@@ -1290,7 +1526,7 @@ def api_ai_chat():
         return jsonify({"success": False, "message": "AI service currently unavailable"}), 503
     
     username = current_username()
-    db = load_users()
+    db = load_db()
     u = find_user(db, username)
     
     if not u and not is_admin_session():
@@ -1328,7 +1564,7 @@ def api_ai_chat():
         response = client.chat(model=model, prompt=full_prompt)
         
         ai_status["count"] += 1
-        save_users(db)
+        save_db(db)
         
         return jsonify({"success": True, "response": response})
     except Exception as e:
@@ -1360,37 +1596,169 @@ def api_renew_server(key):
     return jsonify({"success": True})
 
 
+@app.route("/api/server/env/<path:key>")
+@login_required
+def api_get_env(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+    owner, folder = parse_server_key(key, allow_admin=True)
+    meta = read_meta(owner, folder)
+    return jsonify({"success": True, "env": meta.get("env", {})})
+
+
+@app.route("/api/server/env/<path:key>", methods=["POST"])
+@login_required
+def api_set_env(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+    owner, folder = parse_server_key(key, allow_admin=True)
+    data = request.get_json(silent=True) or {}
+    env = data.get("env", {})
+
+    meta = read_meta(owner, folder)
+    meta["env"] = env
+    write_meta(owner, folder, meta)
+    log_activity(owner, f"Updated environment variables for {folder}")
+    return jsonify({"success": True})
+
+
+@app.route("/api/server/search/<path:key>")
+@login_required
+def api_server_search(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+
+    query = request.args.get("q", "").strip().lower()
+    if not query:
+        return jsonify({"success": True, "results": []})
+
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+
+    results = []
+    for root, dirs, files in os.walk(server_dir):
+        # Search dirs
+        for d in dirs:
+            if query in d.lower():
+                rel = os.path.relpath(os.path.join(root, d), server_dir)
+                results.append({"name": d, "path": rel, "type": "dir"})
+        # Search files
+        for f in files:
+            if f in ("meta.json", "server.log", ".installed"):
+                continue
+            if query in f.lower():
+                rel = os.path.relpath(os.path.join(root, f), server_dir)
+                results.append({"name": f, "path": rel, "type": "file"})
+
+        if len(results) > 100: break # Limit results
+
+    return jsonify({"success": True, "results": results})
+
+
+@app.route("/api/server/backup/<path:key>")
+@login_required
+@rate_limited
+def api_server_backup(key):
+    if not can_access_key(key):
+        return jsonify({"success": False, "message": "Forbidden"}), 403
+
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+
+    import io
+    import zipfile
+
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(server_dir):
+            for file in files:
+                if file in ("server.log", ".installed"): # Skip system files
+                    continue
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, server_dir)
+                zf.write(file_path, arcname)
+
+    memory_file.seek(0)
+    log_activity(owner, f"Created backup of {folder}")
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f"{folder}_backup.zip"
+    )
+
+
 @app.route("/api/admin/quickstats")
 @admin_required
 def admin_quickstats():
-    total_servers = 0
-    running = 0
-    installing = 0
-    banned = 0
+    all_servers = list_all_servers_for_admin()
+    total_servers = len(all_servers)
 
-    for s in list_all_servers_for_admin():
-        total_servers += 1
-        if s.get("status") == "Banned":
-            banned += 1
-        elif s.get("status") == "Running":
-            running += 1
-        elif s.get("status") in ("Installing", "Starting"):
-            installing += 1
+    db = load_db()
+    all_users = db.get("users", [])
+    total_users = len(all_users)
 
-    db = load_users()
-    total_users = len(db.get("users", []))
-    active_users = sum(1 for u in db.get("users", []) if u.get("active", True))
-    premium_users = sum(1 for u in db.get("users", []) if u.get("premium", False))
+    # Last 7 days stats
+    from datetime import datetime
+    now = datetime.now()
+    activity_history = [0] * 7
+    user_growth = [0] * 7
+
+    for u in all_users:
+        try:
+            ca = u.get("created_at")
+            if ca:
+                ca_date = datetime.strptime(ca, "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - ca_date.date()).days
+                if 0 <= diff < 7:
+                    user_growth[6 - diff] += 1
+        except: continue
+
+        for act in u.get("activities", []):
+            try:
+                ad = datetime.strptime(act["timestamp"], "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - ad.date()).days
+                if 0 <= diff < 7:
+                    activity_history[6 - diff] += 1
+            except: continue
 
     return jsonify({"success": True, "stats": {
         "servers_total": total_servers,
-        "servers_running": running,
-        "servers_installing": installing,
-        "servers_banned": banned,
         "users_total": total_users,
-        "users_active": active_users,
-        "users_premium": premium_users
+        "activity_history": activity_history,
+        "user_growth": user_growth
     }})
+
+
+@app.route("/api/admin/broadcast", methods=["POST"])
+@admin_required
+def api_admin_broadcast():
+    data = request.get_json(silent=True) or {}
+    msg = data.get("message", "").strip()
+    ads = load_ads()
+    ads["broadcast"] = msg
+    save_ads(ads)
+    return jsonify({"success": True})
+
+
+@app.route("/api/admin/activities")
+@admin_required
+def admin_activities():
+    db = load_db()
+    all_activities = []
+    for u in db.get("users", []):
+        username = u.get("username")
+        for act in u.get("activities", []):
+            all_activities.append({
+                "username": username,
+                "action": act.get("action"),
+                "status": act.get("status"),
+                "timestamp": act.get("timestamp")
+            })
+
+    # Sort by timestamp descending
+    all_activities.sort(key=lambda x: x["timestamp"], reverse=True)
+    return jsonify({"success": True, "activities": all_activities[:50]})
 
 
 def run_keep_alive():
@@ -1498,32 +1866,48 @@ def run_log_cleaner():
 def cleanup_old_data():
     """حذف البيانات القديمة والغير نشطة"""
     try:
-        db = load_db()
         current_time = time.time()
-        
-        # حذف السيرفرات غير النشطة لأكثر من 30 يوم
-        if "servers" in db:
-            active_servers = []
-            for server in db["servers"]:
-                # حذف السيرفرات غير النشطة لأكثر من 30 يوم
-                if server.get("last_renewed") and (current_time - server["last_renewed"]) > 30 * 24 * 3600:
-                    server_folder = os.path.join(USERS_ROOT, server.get("folder", ""))
-                    if os.path.exists(server_folder):
-                        shutil.rmtree(server_folder, ignore_errors=True)
-                    logger.info(f"Deleted old server: {server.get('folder')}")
-                else:
-                    active_servers.append(server)
-            db["servers"] = active_servers
-        
-        # حذف المستخدمين غير النشطين لأكثر من 90 يوم
+
+        # 1. Cleanup Servers from Filesystem
+        if os.path.isdir(USERS_ROOT):
+            for owner in os.listdir(USERS_ROOT):
+                root = get_user_servers_root(owner)
+                if not os.path.isdir(root):
+                    continue
+                for folder in os.listdir(root):
+                    server_dir = get_server_dir(owner, folder)
+                    if not os.path.isdir(server_dir):
+                        continue
+                    meta = read_meta(owner, folder)
+                    last_renewed = meta.get("last_renewed", 0)
+                    if (current_time - last_renewed) > 30 * 24 * 3600:
+                        stop_proc(f"{owner}::{folder}")
+                        stop_proc(folder)
+                        shutil.rmtree(server_dir, ignore_errors=True)
+                        logger.info(f"Deleted old server: {owner}/{folder}")
+
+        # 2. Cleanup Users from Database
+        db = load_db()
         if "users" in db:
             active_users = []
             for user in db["users"]:
-                if user.get("last_active") and (current_time - user["last_active"]) > 90 * 24 * 3600:
-                    user_folder = os.path.join(USERS_ROOT, user.get("username", ""))
-                    if os.path.exists(user_folder):
-                        shutil.rmtree(user_folder, ignore_errors=True)
-                    logger.info(f"Deleted inactive user: {user.get('username')}")
+                # If last_active is missing, we use created_at or assume active
+                last_active = user.get("last_active")
+                if not last_active:
+                    # Try to parse created_at
+                    try:
+                        ca = user.get("created_at")
+                        if ca:
+                            last_active = time.mktime(time.strptime(ca, "%Y-%m-%d %H:%M:%S"))
+                    except:
+                        pass
+
+                if last_active and (current_time - last_active) > 90 * 24 * 3600:
+                    user_username = user.get("username")
+                    user_dir = os.path.join(USERS_ROOT, user_username)
+                    if os.path.exists(user_dir):
+                        shutil.rmtree(user_dir, ignore_errors=True)
+                    logger.info(f"Deleted inactive user: {user_username}")
                 else:
                     active_users.append(user)
             db["users"] = active_users
@@ -1574,64 +1958,22 @@ class Firewall:
 firewall = Firewall()
 
 
-# نظام الحميات (Subscription Plans)
-SUBSCRIPTION_PLANS = {
-    "free": {
-        "name": "Free",
-        "price": 0,
-        "max_bots": 3,
-        "max_mem_mb": 256,
-        "max_cpu_percent": 50,
-        "features": ["3 Bots", "256MB RAM", "Basic Support"]
-    },
-    "basic": {
-        "name": "Basic",
-        "price": 10,
-        "max_bots": 5,
-        "max_mem_mb": 512,
-        "max_cpu_percent": 70,
-        "features": ["5 Bots", "512MB RAM", "Priority Support", "Advanced Analytics"]
-    },
-    "pro": {
-        "name": "Pro",
-        "price": 25,
-        "max_bots": 10,
-        "max_mem_mb": 1024,
-        "max_cpu_percent": 80,
-        "features": ["10 Bots", "1GB RAM", "24/7 Support", "Advanced Analytics", "Custom Domain"]
-    },
-    "enterprise": {
-        "name": "Enterprise",
-        "price": 100,
-        "max_bots": 50,
-        "max_mem_mb": 4096,
-        "max_cpu_percent": 90,
-        "features": ["50 Bots", "4GB RAM", "Dedicated Support", "Advanced Analytics", "Custom Domain", "API Access", "White Label"]
-    }
-}
-
-
-def get_user_plan(username):
-    """الحصول على خطة المستخدم"""
-    db = load_db()
-    for user in db.get("users", []):
-        if user.get("username") == username:
-            return user.get("plan", "free")
-    return "free"
 
 
 def get_plan_limits(plan):
     """الحصول على حدود الخطة"""
-    return SUBSCRIPTION_PLANS.get(plan, SUBSCRIPTION_PLANS["free"])
+    return PLANS.get(plan, PLANS["free"])
 
 
 def check_plan_limits(username):
     """التحقق من حدود خطة المستخدم"""
-    plan = get_user_plan(username)
-    limits = get_plan_limits(plan)
+    limits = get_user_plan(username)
     
-    db = load_db()
-    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    user_servers_root = get_user_servers_root(username)
+    if os.path.exists(user_servers_root):
+        user_servers = [d for d in os.listdir(user_servers_root) if os.path.isdir(os.path.join(user_servers_root, d))]
+    else:
+        user_servers = []
     
     if len(user_servers) >= limits["max_bots"]:
         return False, f"You have reached the maximum number of bots ({limits['max_bots']}) for your {limits['name']} plan"
@@ -1644,23 +1986,26 @@ def check_plan_limits(username):
 @login_required
 def get_subscription_plans():
     """الحصول على جميع خطط الاشتراك"""
-    return jsonify({"success": True, "plans": SUBSCRIPTION_PLANS})
+    return jsonify({"success": True, "plans": PLANS})
 
 
 @app.route("/api/subscription/current", methods=["GET"])
 @login_required
 def get_current_subscription():
     """الحصول على خطة المستخدم الحالية"""
-    username = session.get("username")
-    plan = get_user_plan(username)
-    limits = get_plan_limits(plan)
+    username = current_username()
+    plan_name, limits = get_user_plan_info(username)
     
-    db = load_db()
-    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    # We count servers from the filesystem because the JSON DB doesn't track them reliably
+    user_servers_root = get_user_servers_root(username)
+    if os.path.exists(user_servers_root):
+        user_servers = [d for d in os.listdir(user_servers_root) if os.path.isdir(os.path.join(user_servers_root, d))]
+    else:
+        user_servers = []
     
     return jsonify({
         "success": True,
-        "plan": plan,
+        "plan": plan_name,
         "limits": limits,
         "usage": {
             "bots_used": len(user_servers),
@@ -1673,11 +2018,11 @@ def get_current_subscription():
 @login_required
 def upgrade_subscription():
     """ترقية خطة الاشتراك"""
-    username = session.get("username")
+    username = current_username()
     data = request.get_json()
     new_plan = data.get("plan")
     
-    if new_plan not in SUBSCRIPTION_PLANS:
+    if new_plan not in PLANS:
         return jsonify({"success": False, "message": "Invalid plan"}), 400
     
     db = load_db()
@@ -1740,9 +2085,9 @@ def firewall_check():
     if request.path.startswith('/static') or request.path.startswith('/health'):
         return None
     
-    client_ip = request.remote_addr or '127.0.0.1'
+    client_ip = get_client_ip() or '127.0.0.1'
     
-    # التحقق من الحظر
+    # التحقق من الحظر اليدوي
     if firewall.is_blocked(client_ip):
         return jsonify({"success": False, "message": "IP blocked"}), 403
     
@@ -1750,6 +2095,14 @@ def firewall_check():
     if not firewall.check_rate_limit(client_ip):
         return jsonify({"success": False, "message": "Rate limit exceeded"}), 429
     
+    # التحقق من أمان الـ IP (فقط للمسارات الحساسة لتجنب استهلاك الـ API)
+    sensitive_paths = ('/api/auth/', '/api/subscription/upgrade', '/add')
+    if any(request.path.startswith(p) for p in sensitive_paths):
+        allowed, msg = check_ip_security(client_ip)
+        if not allowed:
+            firewall.block_ip(client_ip) # حظر تلقائي للمحاولات المشبوهة
+            return jsonify({"success": False, "message": msg}), 403
+
     return None
 
 
