@@ -752,6 +752,15 @@
       </div>
     </div>
 
+    <div class="firewall-panel">
+        <h3 style="font-size:18px; font-weight:700; margin-bottom: 20px;">📢 Admin Broadcast System / بث إداري</h3>
+        <div style="display: flex; gap: 12px;">
+            <input type="text" id="broadcastInput" placeholder="Enter message for all users..." style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); outline:none;">
+            <button class="btn btn-primary" onclick="sendBroadcast()">Send Broadcast</button>
+            <button class="btn btn-danger" onclick="clearBroadcast()">Clear</button>
+        </div>
+    </div>
+
     <div class="container" style="margin-top:40px">
       <div class="section-title">OPERATIVES / المستخدمين</div>
 
@@ -942,6 +951,21 @@
           alert(d.message);
         }
       } catch (e) { alert('Failed to unblock IP'); }
+    }
+
+    async function sendBroadcast() {
+        const msg = document.getElementById('broadcastInput').value.trim();
+        const r = await fetch('/api/admin/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        if ((await r.json()).success) alert('Broadcast sent!');
+    }
+
+    async function clearBroadcast() {
+        document.getElementById('broadcastInput').value = '';
+        await sendBroadcast();
     }
 
     async function runCleanupNow() {

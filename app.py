@@ -13,7 +13,7 @@ import logging
 import requests
 # import dns_fix
 import psutil
-from flask import Flask, send_from_directory, request, jsonify, redirect, session
+from flask import Flask, send_from_directory, request, jsonify, redirect, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
@@ -83,7 +83,7 @@ def add_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io; object-src 'none';"
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io https://cdnjs.cloudflare.com; object-src 'none';"
     response.headers['Referrer-Policy'] = 'strict-origin-when-downgrade'
     response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
     response.headers['X-Download-Options'] = 'noopen'
@@ -206,24 +206,24 @@ def current_username():
 
 PLANS = {
     "free": {
-        "name": "Free",
-        "label": "Free Tier",
+        "name": "Unlimited Free",
+        "label": "Unlimited Free",
         "price": 0,
-        "max_bots": 3,
-        "max_mem_mb": 256,
-        "max_disk_mb": 100,
-        "max_cpu_percent": 50,
-        "features": ["3 Bots", "256MB RAM", "Basic Support"]
+        "max_bots": 100,
+        "max_mem_mb": 4096,
+        "max_disk_mb": 10240,
+        "max_cpu_percent": 80,
+        "features": ["100 Bots", "4GB RAM", "10GB NVMe", "AI Access"]
     },
     "basic": {
         "name": "Basic",
         "label": "Basic Tier",
         "price": 10,
-        "max_bots": 5,
-        "max_mem_mb": 512,
-        "max_disk_mb": 500,
-        "max_cpu_percent": 70,
-        "features": ["5 Bots", "512MB RAM", "Priority Support", "Advanced Analytics"]
+        "max_bots": 150,
+        "max_mem_mb": 8192,
+        "max_disk_mb": 20480,
+        "max_cpu_percent": 90,
+        "features": ["150 Bots", "8GB RAM", "Priority Support"]
     },
     "pro": {
         "name": "Pro",
@@ -247,17 +247,56 @@ PLANS = {
     }
 }
 
+# --- TEMPLATES SYSTEM ---
+TEMPLATES = {
+    "telegram": {
+        "name": "Telegram Bot (Python)",
+        "files": {
+            "main.py": "import telebot\nimport os\n\nTOKEN = os.getenv('BOT_TOKEN', 'YOUR_TOKEN_HERE')\nbot = telebot.TeleBot(TOKEN)\n\n@bot.message_handler(commands=['start', 'help'])\ndef send_welcome(message):\n\tbot.reply_to(message, 'Howdy, how are you doing?')\n\nprint('Bot started...')\nbot.infinity_polling()",
+            "requirements.txt": "pyTelegramBotAPI"
+        },
+        "startup": "main.py"
+    },
+    "discord": {
+        "name": "Discord Bot (Python)",
+        "files": {
+            "bot.py": "import discord\nimport os\n\nTOKEN = os.getenv('BOT_TOKEN', 'YOUR_TOKEN_HERE')\nclient = discord.Client(intents=discord.Intents.default())\n\n@client.event\nasync function on_ready():\n    print(f'Logged in as {client.user}')\n\n@client.event\nasync function on_message(message):\n    if message.author == client.user: return\n    if message.content == '!hello':\n        await message.channel.send('Hello from White Wolf!')\n\nclient.run(TOKEN)",
+            "requirements.txt": "discord.py"
+        },
+        "startup": "bot.py"
+    },
+    "flask": {
+        "name": "Flask Web App",
+        "files": {
+            "app.py": "from flask import Flask\napp = Flask(__name__)\n\n@app.route('/')\ndef hello():\n    return 'Hello from White Wolf Hosting!'\n\nif __name__ == '__main__':\n    app.run(host='0.0.0.0', port=8080)",
+            "requirements.txt": "flask"
+        },
+        "startup": "app.py"
+    },
+    "php_telegram": {
+        "name": "PHP Telegram Bot",
+        "files": {
+            "bot.php": "<?php\n$token = getenv('BOT_TOKEN') ?: 'YOUR_TOKEN';\n$api = \"https://api.telegram.org/bot$token/\";\n$update = json_decode(file_get_contents('php://input'), true);\nif (!$update) die('No input');\n$chat_id = $update['message']['chat']['id'];\n$text = $update['message']['text'];\nif ($text == '/start') {\n    file_get_contents($api . \"sendMessage?chat_id=$chat_id&text=\" . urlencode(\"Hello from White Wolf PHP!\"));\n}\n",
+            "index.php": "<?php echo \"Bot is alive!\"; ?>"
+        },
+        "startup": "index.php"
+    }
+}
+
+
 # --- ADS SYSTEM ---
 ADS_FILE = os.path.join(DATA_DIR, "ads.json")
 
 def load_ads():
     if not os.path.exists(ADS_FILE):
-        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c", "broadcast": ""}
     try:
         with open(ADS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            d = json.load(f)
+            if "broadcast" not in d: d["broadcast"] = ""
+            return d
     except:
-        return {"current_ad": "", "contact_link": "https://t.me/j49_c"}
+        return {"current_ad": "", "contact_link": "https://t.me/j49_c", "broadcast": ""}
 
 def save_ads(data):
     with open(ADS_FILE, "w", encoding="utf-8") as f:
@@ -401,6 +440,7 @@ def ensure_meta(owner: str, folder: str):
         "startup_file": "", 
         "owner": owner, 
         "banned": False,
+        "env": {}, # Custom Environment Variables
         "last_renewed": time.time() # Bot needs renewal every 4 days
     }
     if not os.path.exists(meta_path):
@@ -510,10 +550,20 @@ def ensure_requirements_installed(owner: str, folder: str):
         return False
 
 
-def get_subprocess_env():
+def get_subprocess_env(owner: str, folder: str):
     env = os.environ.copy()
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONDONTWRITEBYTECODE'] = '1'
+
+    # Load custom environment variables from meta.json
+    try:
+        meta = read_meta(owner, folder)
+        custom_env = meta.get("env", {})
+        for k, v in custom_env.items():
+            env[str(k)] = str(v)
+    except:
+        pass
+
     return env
 
 
@@ -578,13 +628,14 @@ while True:
     log_path = os.path.join(server_dir, "server.log")
     log_file = open(log_path, "a", encoding="utf-8", errors="ignore")
 
+    env = get_subprocess_env(owner, folder)
     if startup_file.lower().endswith(".php"):
         proc = subprocess.Popen(
             ["php", startup_file],
             cwd=server_dir,
             stdout=log_file,
             stderr=log_file,
-            env=get_subprocess_env(),
+            env=env,
         )
     else:
         proc = subprocess.Popen(
@@ -592,7 +643,7 @@ while True:
             cwd=server_dir,
             stdout=log_file,
             stderr=log_file,
-            env=get_subprocess_env(),
+            env=env,
         )
     return proc, log_file
 
@@ -1004,12 +1055,19 @@ def servers():
     return jsonify({"success": True, "servers": list_servers_for_user(current_username())})
 
 
+@app.route("/api/templates")
+@login_required
+def api_get_templates():
+    return jsonify({"success": True, "templates": {k: v["name"] for k, v in TEMPLATES.items()}})
+
+
 @app.route("/add", methods=["POST"])
 @login_required
 @rate_limited
 def add_server():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
+    template_id = data.get("template")
     folder = sanitize_folder_name(name)
     if not folder:
         return jsonify({"success": False, "message": "Invalid server name"}), 400
@@ -1038,8 +1096,21 @@ def add_server():
         "display_name": name or folder,
         "startup_file": "",
         "owner": owner,
-        "banned": False
+        "banned": False,
+        "env": {}
     }
+
+    # Apply Template
+    if template_id and template_id in TEMPLATES:
+        tpl = TEMPLATES[template_id]
+        meta["startup_file"] = tpl["startup"]
+        for fname, content in tpl["files"].items():
+            try:
+                with open(os.path.join(target, fname), "w", encoding="utf-8") as f:
+                    f.write(content)
+            except:
+                pass
+
     write_meta(owner, folder, meta)
 
     set_state(folder if not is_admin_session() else f"{owner}::{folder}", "Offline")
@@ -1525,6 +1596,98 @@ def api_renew_server(key):
     return jsonify({"success": True})
 
 
+@app.route("/api/server/env/<path:key>")
+@login_required
+def api_get_env(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+    owner, folder = parse_server_key(key, allow_admin=True)
+    meta = read_meta(owner, folder)
+    return jsonify({"success": True, "env": meta.get("env", {})})
+
+
+@app.route("/api/server/env/<path:key>", methods=["POST"])
+@login_required
+def api_set_env(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+    owner, folder = parse_server_key(key, allow_admin=True)
+    data = request.get_json(silent=True) or {}
+    env = data.get("env", {})
+
+    meta = read_meta(owner, folder)
+    meta["env"] = env
+    write_meta(owner, folder, meta)
+    log_activity(owner, f"Updated environment variables for {folder}")
+    return jsonify({"success": True})
+
+
+@app.route("/api/server/search/<path:key>")
+@login_required
+def api_server_search(key):
+    if not can_access_key(key):
+        return jsonify({"success": False}), 403
+
+    query = request.args.get("q", "").strip().lower()
+    if not query:
+        return jsonify({"success": True, "results": []})
+
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+
+    results = []
+    for root, dirs, files in os.walk(server_dir):
+        # Search dirs
+        for d in dirs:
+            if query in d.lower():
+                rel = os.path.relpath(os.path.join(root, d), server_dir)
+                results.append({"name": d, "path": rel, "type": "dir"})
+        # Search files
+        for f in files:
+            if f in ("meta.json", "server.log", ".installed"):
+                continue
+            if query in f.lower():
+                rel = os.path.relpath(os.path.join(root, f), server_dir)
+                results.append({"name": f, "path": rel, "type": "file"})
+
+        if len(results) > 100: break # Limit results
+
+    return jsonify({"success": True, "results": results})
+
+
+@app.route("/api/server/backup/<path:key>")
+@login_required
+@rate_limited
+def api_server_backup(key):
+    if not can_access_key(key):
+        return jsonify({"success": False, "message": "Forbidden"}), 403
+
+    owner, folder = parse_server_key(key, allow_admin=True)
+    server_dir = get_server_dir(owner, folder)
+
+    import io
+    import zipfile
+
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(server_dir):
+            for file in files:
+                if file in ("server.log", ".installed"): # Skip system files
+                    continue
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, server_dir)
+                zf.write(file_path, arcname)
+
+    memory_file.seek(0)
+    log_activity(owner, f"Created backup of {folder}")
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f"{folder}_backup.zip"
+    )
+
+
 @app.route("/api/admin/quickstats")
 @admin_required
 def admin_quickstats():
@@ -1565,6 +1728,17 @@ def admin_quickstats():
         "activity_history": activity_history,
         "user_growth": user_growth
     }})
+
+
+@app.route("/api/admin/broadcast", methods=["POST"])
+@admin_required
+def api_admin_broadcast():
+    data = request.get_json(silent=True) or {}
+    msg = data.get("message", "").strip()
+    ads = load_ads()
+    ads["broadcast"] = msg
+    save_ads(ads)
+    return jsonify({"success": True})
 
 
 @app.route("/api/admin/activities")

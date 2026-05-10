@@ -6,7 +6,17 @@ RUN apt-get update && apt-get install -y \
     dnsutils \
     ca-certificates \
     curl \
+    ffmpeg \
+    php-cli \
+    php-curl \
+    php-mbstring \
+    php-xml \
+    git \
+    zip \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 
 RUN useradd -m -u 1000 user
