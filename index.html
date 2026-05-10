@@ -2024,12 +2024,24 @@
             const usage = data.ai_usage;
             document.getElementById('aiUsageTxt').textContent = `AI REQUESTS TODAY: ${usage.count || 0} / 20`;
           }
+
+          if (data.stats) {
+            document.getElementById('statServers').textContent = data.stats.total_engines;
+            document.getElementById('statRunning').textContent = data.stats.running_engines;
+            document.getElementById('statMemory').textContent = data.stats.memory_used_mb + ' MB';
+
+            const hours = Math.floor(data.stats.uptime_seconds / 3600);
+            document.getElementById('statUptime').textContent = hours + 'h';
+
+            if (data.stats.activity_chart) {
+                generateActivityChart(data.stats.activity_chart);
+            }
+          }
         }
       });
 
       loadAds();
-      updateStats(d.servers || []);
-      generateActivityChart();
+      loadUserActivities();
 
       (d.servers || []).forEach(s => {
         const div = document.createElement('div');
@@ -2283,35 +2295,40 @@
       showNotification(titles[type] || 'Info', msg, type);
     }
 
-    function updateStats(servers) {
-      const total = servers.length;
-      const running = servers.filter(s => s.status === 'Running').length;
-      const memory = servers.reduce((sum, s) => {
-        if (s.mem) {
-          const match = s.mem.match(/([\d.]+)\s*MB/i);
-          if (match) return sum + parseFloat(match[1]);
+    async function loadUserActivities() {
+      try {
+        const r = await fetch('/api/user/activities');
+        const d = await r.json();
+        if (d.success) {
+          const cont = document.getElementById('userActivityLog');
+          if (!cont) return;
+          cont.innerHTML = d.activities.map(a => `
+            <div class="activity-item">
+              <div class="activity-icon">${a.action.includes('Created') ? '🚀' : a.action.includes('Edited') ? '📝' : '⚡'}</div>
+              <div class="activity-content">
+                <div class="activity-title">${escapeHtml(a.action)}</div>
+                <div class="activity-time">${a.timestamp}</div>
+              </div>
+              <div class="activity-status ${a.status}">${a.status.toUpperCase()}</div>
+            </div>
+          `).join('') || '<div style="padding:20px; text-align:center; color:var(--text-dim)">No activity found</div>';
         }
-        return sum;
-      }, 0);
-
-      document.getElementById('statServers').textContent = total;
-      document.getElementById('statRunning').textContent = running;
-      document.getElementById('statMemory').textContent = memory.toFixed(1) + ' MB';
-      document.getElementById('statUptime').textContent = Math.floor(Math.random() * 24 + 1) + 'h';
+      } catch (e) { console.error(e); }
     }
 
-    function generateActivityChart() {
+    function generateActivityChart(data) {
       const chart = document.getElementById('activityChart');
+      if (!chart) return;
       chart.innerHTML = '';
       
-      const data = [45, 72, 38, 91, 65, 82, 58];
-      const max = Math.max(...data);
+      const chartData = data || [0, 0, 0, 0, 0, 0, 0];
+      const max = Math.max(...chartData, 5); // Use 5 as minimum max for better scaling
       
-      data.forEach((value, index) => {
+      chartData.forEach((value) => {
         const bar = document.createElement('div');
         bar.className = 'chart-bar';
         const height = (value / max) * 100;
-        bar.style.height = height + '%';
+        bar.style.height = Math.max(height, 5) + '%';
         bar.setAttribute('data-value', value);
         chart.appendChild(bar);
       });

@@ -813,11 +813,7 @@
       const d = await r.json();
       const s = d.stats || {};
       document.getElementById('st_total').textContent = s.servers_total || 0;
-      document.getElementById('st_active_srv').textContent = `${s.servers_running || 0} Actively Running`;
-      document.getElementById('st_ban').textContent = s.servers_banned || 0;
       document.getElementById('u_total').textContent = s.users_total || 0;
-      document.getElementById('u_active_stat').textContent = `${s.users_active || 0} Active Accounts`;
-      document.getElementById('ping').textContent = (Date.now() - startT) + 'ms';
       try {
         const sr = await fetch('/api/system/status');
         const sd = await sr.json();
@@ -839,17 +835,17 @@
       } catch (e) { }
     }
 
-    function generateAdminCharts() {
+    function generateAdminCharts(stats) {
       // Activity Chart
       const activityChart = document.getElementById('activityChart');
-      if (activityChart) {
+      if (activityChart && stats.activity_history) {
         activityChart.innerHTML = '';
-        const data = [65, 59, 80, 81, 56, 55, 72];
-        const max = Math.max(...data);
-        data.forEach((value, index) => {
+        const data = stats.activity_history;
+        const max = Math.max(...data, 5);
+        data.forEach((value) => {
           const bar = document.createElement('div');
           bar.className = 'chart-bar';
-          bar.style.height = (value / max * 100) + '%';
+          bar.style.height = Math.max(value / max * 100, 5) + '%';
           bar.setAttribute('data-value', value);
           activityChart.appendChild(bar);
         });
@@ -857,40 +853,36 @@
 
       // User Growth Chart
       const userChart = document.getElementById('userChart');
-      if (userChart) {
+      if (userChart && stats.user_growth) {
         userChart.innerHTML = '';
-        const data = [28, 48, 40, 19, 86, 27, 90];
-        const max = Math.max(...data);
-        data.forEach((value, index) => {
+        const data = stats.user_growth;
+        const max = Math.max(...data, 5);
+        data.forEach((value) => {
           const bar = document.createElement('div');
           bar.className = 'chart-bar';
-          bar.style.height = (value / max * 100) + '%';
+          bar.style.height = Math.max(value / max * 100, 5) + '%';
           bar.setAttribute('data-value', value);
           userChart.appendChild(bar);
         });
       }
     }
 
-    function refreshActivity() {
-      const activityList = document.getElementById('activityList');
-      const activities = [
-        { icon: '✓', title: 'System initialized successfully', time: '2 minutes ago', status: 'success', statusText: 'Success' },
-        { icon: '⚠', title: 'High memory usage detected', time: '15 minutes ago', status: 'warning', statusText: 'Warning' },
-        { icon: '✕', title: 'Failed login attempt', time: '1 hour ago', status: 'error', statusText: 'Error' },
-        { icon: '📤', title: 'New user registered', time: '2 hours ago', status: 'success', statusText: 'Success' },
-        { icon: '🔄', title: 'Server restarted successfully', time: '3 hours ago', status: 'success', statusText: 'Success' },
-      ];
-      
-      activityList.innerHTML = activities.map(a => `
-        <div class="activity-item">
-          <div class="activity-icon">${a.icon}</div>
-          <div class="activity-content">
-            <div class="activity-title">${a.title}</div>
-            <div class="activity-time">${a.time}</div>
-          </div>
-          <div class="activity-status ${a.status}">${a.statusText}</div>
-        </div>
-      `).join('');
+    async function refreshActivity() {
+        const r = await fetch('/api/admin/activities');
+        const d = await r.json();
+        if (d.success) {
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = d.activities.map(a => `
+                <div class="activity-item">
+                <div class="activity-icon">${a.action.includes('Registered') ? '👤' : '⚡'}</div>
+                <div class="activity-content">
+                    <div class="activity-title"><strong>${a.username}</strong>: ${a.action}</div>
+                    <div class="activity-time">${a.timestamp}</div>
+                </div>
+                <div class="activity-status success">Success</div>
+                </div>
+            `).join('') || '<div style="padding:20px; text-align:center; color:var(--text-dim)">No system activity recorded</div>';
+        }
     }
 
     async function refreshFirewall() {
@@ -1044,7 +1036,14 @@
     async function refreshAll() {
       startT = Date.now();
       document.getElementById('msg').textContent = 'Syncing to mainframe...';
-      await Promise.all([refreshStats(), refreshServers(), refreshUsers()]);
+
+      const r = await fetch('/api/admin/quickstats');
+      const d = await r.json();
+      if (d.success) {
+          generateAdminCharts(d.stats);
+      }
+
+      await Promise.all([refreshStats(), refreshServers(), refreshUsers(), refreshActivity(), refreshFirewall()]);
       document.getElementById('msg').innerHTML = '<span style="color:var(--success)">SYNC COMPLETE.</span>';
     }
     document.addEventListener('DOMContentLoaded', () => {

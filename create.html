@@ -232,7 +232,7 @@
       const email = document.getElementById('e').value.trim();
       const password = document.getElementById('p').value;
 
-      const r = await fetch('/api/auth/register-otp', {
+      const r = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password })
       });

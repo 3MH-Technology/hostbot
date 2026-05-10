@@ -37,6 +37,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger('hostbot')
 
+START_TIME = time.time()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 USERS_ROOT = os.path.join(BASE_DIR, "USERS")
@@ -84,6 +85,9 @@ def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://f.top4top.io; object-src 'none';"
     response.headers['Referrer-Policy'] = 'strict-origin-when-downgrade'
+    response.headers['X-Permitted-Cross-Domain-Policies'] = 'none'
+    response.headers['X-Download-Options'] = 'noopen'
+    # حظر المحاكاة والبيانات الوهمية عبر منع التضمين في الـ iFrames
     return response
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USER", "moh777")
@@ -160,6 +164,26 @@ def save_db(db):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2)
     os.replace(tmp, USERS_DB)
+
+
+def log_activity(username: str, action: str, status: str = "success"):
+    try:
+        db = load_db()
+        u = find_user(db, username)
+        if not u:
+            return
+
+        activities = u.setdefault("activities", [])
+        activities.insert(0, {
+            "action": action,
+            "status": status,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        })
+        # Keep only the last 20 activities
+        u["activities"] = activities[:20]
+        save_db(db)
+    except Exception as e:
+        logger.error(f"Failed to log activity for {username}: {e}")
 
 
 def find_user(db, username: str):
@@ -655,6 +679,7 @@ def api_login():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
+    fingerprint = data.get("fingerprint")
 
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         session["user"] = {"username": ADMIN_USERNAME, "is_admin": True}
@@ -670,34 +695,66 @@ def api_login():
     if not check_password_hash(u.get("password_hash", ""), password):
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
 
+    if fingerprint and u.get("fingerprint") and u.get("fingerprint") != fingerprint:
+        # السماح بالدخول ولكن مع تحديث البصمة أو تسجيل تنبيه
+        # لغرض الصرامة يمكن منعه، ولكن هنا سنحدث البصمة إذا لم تكن موجودة
+        pass
+
+    if fingerprint and not u.get("fingerprint"):
+        u["fingerprint"] = fingerprint
+        save_db(db)
+
     session["user"] = {"username": u.get("username"), "is_admin": False}
     session.permanent = True
     ensure_user_dirs(u.get("username"))
     return jsonify({"success": True, "is_admin": False})
 
 
-import smtplib
-DISPOSABLE_DOMAINS = [
-    "tempmail.com", "10minutemail.com", "guerrillamail.com", 
-    "mailinator.com", "yopmail.com", "dropmail.me", "mohmal.com", 
-    "maildrop.cc", "dispostable.com", "temp-mail.org", "nada.ltd"
-]
 
 def get_client_ip():
     if request.headers.get('X-Forwarded-For'):
         return request.headers.get('X-Forwarded-For').split(',')[0].strip()
     return request.remote_addr or ""
 
-# OTP SYSTEM REMOVED
+
+def check_ip_security(ip):
+    """
+    التحقق من أمان الـ IP: منع VPN، Proxy، وحظر الكيان الصهيوني.
+    """
+    if ip in ('127.0.0.1', '::1', '0.0.0.0'):
+        return True, "Local"
+
+    try:
+        # استخدام API خارجي للتحقق من بيانات الـ IP
+        # ملاحظة: في بيئة الإنتاج يفضل استخدام اشتراك مدفوع أو قاعدة بيانات محلية مثل GeoIP
+        res = requests.get(f"https://ip-api.com/json/{ip}?fields=status,message,countryCode,proxy,hosting,vpn", timeout=5)
+        data = res.json()
+
+        if data.get("status") == "fail":
+            return True, "Unknown" # السماح في حال فشل الـ API مؤقتاً لتجنب تعطل الموقع
+
+        # حظر الكيان الصهيوني
+        if data.get("countryCode") == "IL":
+            return False, "Access denied from this region."
+
+        # منع VPN و Proxy
+        if data.get("proxy") is True or data.get("vpn") is True or data.get("hosting") is True:
+            return False, "VPN/Proxy/Hosting connections are not allowed. Please use a direct residential connection."
+
+        return True, data.get("countryCode")
+    except Exception as e:
+        logger.error(f"IP Security check failed for {ip}: {e}")
+        return True, "Check Failed"
 
 
-@app.route("/api/auth/register-otp", methods=["POST"])
+@app.route("/api/auth/register", methods=["POST"])
 @rate_limited
-def api_register_otp():
+def api_register():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     password = data.get("password") or ""
     email = (data.get("email") or "").strip()
+    fingerprint = data.get("fingerprint")
 
     # Email validation removed - site fully open
     # if not email or '@' not in email:
@@ -720,10 +777,12 @@ def api_register_otp():
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
-    # Email duplicate check removed - site fully open
-    # for u in db.get("users", []):
-    #     if u.get("email") == email:
-    #         return jsonify({"success": False, "message": "Email already in use"}), 409
+    # فرض قاعدة حساب واحد لكل جهاز
+    if fingerprint:
+        for u in db.get("users", []):
+            if u.get("fingerprint") == fingerprint:
+                return jsonify({"success": False, "message": "You already have an account from this device."}), 403
+
 
     client_ip = get_client_ip()
     new_user = {
@@ -733,6 +792,7 @@ def api_register_otp():
         "active": True,
         "plan": "free",
         "ip": client_ip,
+        "fingerprint": fingerprint,
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S")
     }
     db.setdefault("users", []).append(new_user)
@@ -742,7 +802,8 @@ def api_register_otp():
     session["user"] = {"username": username, "is_admin": False}
     session.permanent = True
     ensure_user_dirs(username)
-    return jsonify({"success": True, "skip_otp": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
+    log_activity(username, "Registered new account")
+    return jsonify({"success": True, "message": "تم إنشاء حسابك بنجاح! جاري تحويلك للوحة التحكم..."}), 200
 
 
 # Legacy route removed
@@ -754,8 +815,38 @@ def api_user_profile():
     username = current_username()
     db = load_db()
     u = find_user(db, username)
-    plan_name = "admin" if is_admin_session() else (u.get("plan", "free") if u else "free")
-    plan_info = PLANS.get(plan_name, PLANS["free"])
+    plan_name, plan_info = get_user_plan_info(username)
+
+    # Calculate real-time stats
+    user_servers = list_servers_for_user(username)
+    running_count = sum(1 for s in user_servers if s.get("status") == "Running")
+
+    # Activity counts for the last 7 days
+    from datetime import datetime, timedelta
+    activity_stats = [0] * 7
+    now = datetime.now()
+    if u and "activities" in u:
+        for act in u["activities"]:
+            try:
+                act_date = datetime.strptime(act["timestamp"], "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - act_date.date()).days
+                if 0 <= diff < 7:
+                    activity_stats[6 - diff] += 1
+            except:
+                continue
+
+    total_mem = 0
+    for s in user_servers:
+        key = s.get("key")
+        proc_tuple = running_procs.get(key)
+        if proc_tuple:
+            proc, _ = proc_tuple
+            try:
+                p = psutil.Process(proc.pid)
+                total_mem += p.memory_info().rss / 1024 / 1024
+            except:
+                pass
+
     return jsonify({
         "success": True,
         "username": username,
@@ -763,7 +854,30 @@ def api_user_profile():
         "plan": plan_name,
         "plan_label": plan_info.get("label", plan_name.title()),
         "max_bots": get_user_limit(username),
-        "max_mem_mb": get_user_mem_limit(username)
+        "max_mem_mb": get_user_mem_limit(username),
+        "stats": {
+            "total_engines": len(user_servers),
+            "running_engines": running_count,
+            "memory_used_mb": round(total_mem, 1),
+            "activity_chart": activity_stats,
+            "uptime_seconds": int(time.time() - START_TIME)
+        },
+        "ai_usage": u.get("ai_usage", {"count": 0}) if u else {"count": 0}
+    })
+
+
+@app.route("/api/user/activities")
+@login_required
+def api_user_activities():
+    username = current_username()
+    db = load_db()
+    u = find_user(db, username)
+    if not u:
+        return jsonify({"success": False, "message": "User not found"}), 404
+
+    return jsonify({
+        "success": True,
+        "activities": u.get("activities", [])
     })
 
 
@@ -929,6 +1043,7 @@ def add_server():
     write_meta(owner, folder, meta)
 
     set_state(folder if not is_admin_session() else f"{owner}::{folder}", "Offline")
+    log_activity(owner, f"Created engine: {name}")
 
     if is_admin_session():
         return jsonify({"success": True, "servers": list_all_servers_for_admin()})
@@ -1046,6 +1161,7 @@ def server_action(key, act):
 
     t = threading.Thread(target=background_start, args=(key, owner, folder, startup), daemon=True)
     t.start()
+    log_activity(owner, f"{act.capitalize()} engine: {folder}")
     return jsonify({"success": True})
 
 
@@ -1162,6 +1278,7 @@ def file_save(key):
     try:
         with open(full, "w", encoding="utf-8") as f:
             f.write(content)
+        log_activity(owner, f"Edited file: {file_rel}")
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -1244,6 +1361,7 @@ def file_upload(key):
     os.makedirs(base_dir, exist_ok=True)
 
     owner, folder = parse_server_key(key, allow_admin=True)
+    log_activity(owner, f"Uploaded {len(files)} file(s) to {folder}")
     server_dir = get_server_dir(owner, folder)
     current_size_mb = get_dir_size(server_dir) / 1024 / 1024
     disk_limit_mb = get_user_disk_limit(owner)
@@ -1410,34 +1528,63 @@ def api_renew_server(key):
 @app.route("/api/admin/quickstats")
 @admin_required
 def admin_quickstats():
-    total_servers = 0
-    running = 0
-    installing = 0
-    banned = 0
-
-    for s in list_all_servers_for_admin():
-        total_servers += 1
-        if s.get("status") == "Banned":
-            banned += 1
-        elif s.get("status") == "Running":
-            running += 1
-        elif s.get("status") in ("Installing", "Starting"):
-            installing += 1
+    all_servers = list_all_servers_for_admin()
+    total_servers = len(all_servers)
 
     db = load_db()
-    total_users = len(db.get("users", []))
-    active_users = sum(1 for u in db.get("users", []) if u.get("active", True))
-    premium_users = sum(1 for u in db.get("users", []) if u.get("premium", False))
+    all_users = db.get("users", [])
+    total_users = len(all_users)
+
+    # Last 7 days stats
+    from datetime import datetime
+    now = datetime.now()
+    activity_history = [0] * 7
+    user_growth = [0] * 7
+
+    for u in all_users:
+        try:
+            ca = u.get("created_at")
+            if ca:
+                ca_date = datetime.strptime(ca, "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - ca_date.date()).days
+                if 0 <= diff < 7:
+                    user_growth[6 - diff] += 1
+        except: continue
+
+        for act in u.get("activities", []):
+            try:
+                ad = datetime.strptime(act["timestamp"], "%Y-%m-%d %H:%M:%S")
+                diff = (now.date() - ad.date()).days
+                if 0 <= diff < 7:
+                    activity_history[6 - diff] += 1
+            except: continue
 
     return jsonify({"success": True, "stats": {
         "servers_total": total_servers,
-        "servers_running": running,
-        "servers_installing": installing,
-        "servers_banned": banned,
         "users_total": total_users,
-        "users_active": active_users,
-        "users_premium": premium_users
+        "activity_history": activity_history,
+        "user_growth": user_growth
     }})
+
+
+@app.route("/api/admin/activities")
+@admin_required
+def admin_activities():
+    db = load_db()
+    all_activities = []
+    for u in db.get("users", []):
+        username = u.get("username")
+        for act in u.get("activities", []):
+            all_activities.append({
+                "username": username,
+                "action": act.get("action"),
+                "status": act.get("status"),
+                "timestamp": act.get("timestamp")
+            })
+
+    # Sort by timestamp descending
+    all_activities.sort(key=lambda x: x["timestamp"], reverse=True)
+    return jsonify({"success": True, "activities": all_activities[:50]})
 
 
 def run_keep_alive():
@@ -1764,9 +1911,9 @@ def firewall_check():
     if request.path.startswith('/static') or request.path.startswith('/health'):
         return None
     
-    client_ip = request.remote_addr or '127.0.0.1'
+    client_ip = get_client_ip() or '127.0.0.1'
     
-    # التحقق من الحظر
+    # التحقق من الحظر اليدوي
     if firewall.is_blocked(client_ip):
         return jsonify({"success": False, "message": "IP blocked"}), 403
     
@@ -1774,6 +1921,14 @@ def firewall_check():
     if not firewall.check_rate_limit(client_ip):
         return jsonify({"success": False, "message": "Rate limit exceeded"}), 429
     
+    # التحقق من أمان الـ IP (فقط للمسارات الحساسة لتجنب استهلاك الـ API)
+    sensitive_paths = ('/api/auth/', '/api/subscription/upgrade', '/add')
+    if any(request.path.startswith(p) for p in sensitive_paths):
+        allowed, msg = check_ip_security(client_ip)
+        if not allowed:
+            firewall.block_ip(client_ip) # حظر تلقائي للمحاولات المشبوهة
+            return jsonify({"success": False, "message": msg}), 403
+
     return None
 
 
