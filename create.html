@@ -224,6 +224,42 @@
   </div>
 
   <script>
+    async function getFingerprint() {
+      const data = {
+        ua: navigator.userAgent,
+        lang: navigator.language,
+        colorDepth: window.screen.colorDepth,
+        mem: navigator.deviceMemory || 0,
+        cores: navigator.hardwareConcurrency || 0,
+        res: `${window.screen.width}x${window.screen.height}`,
+        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        canvas: (() => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069";
+            ctx.fillText("WhiteWolf_FP_1.1", 2, 15);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+            ctx.fillText("WhiteWolf_FP_1.1", 4, 17);
+            return canvas.toDataURL();
+          } catch(e) { return "error"; }
+        })(),
+        headless: navigator.webdriver || !(navigator.languages && navigator.languages.length) || (navigator.plugins && navigator.plugins.length === 0)
+      };
+
+      const str = JSON.stringify(data);
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     async function doCreate() {
       const m = document.getElementById('m');
       m.style.color = "var(--muted)";
@@ -231,10 +267,11 @@
       const username = document.getElementById('u').value.trim();
       const email = document.getElementById('e').value.trim();
       const password = document.getElementById('p').value;
+      const fingerprint = await getFingerprint();
 
       const r = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ username, email, password, fingerprint })
       });
       const d = await r.json().catch(() => ({ success: false, message: 'Server transmission error' }));
       if (!r.ok || !d.success) { m.style.color = "var(--error)"; m.textContent = d.message || 'Clearance denied'; return; }
