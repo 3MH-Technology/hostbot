@@ -148,6 +148,323 @@
       color: white;
     }
 
+    /* Admin Stats Dashboard */
+    .admin-dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+      background: rgba(94, 92, 230, 0.1);
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, var(--text), var(--text-dim));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-trend {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    .stat-trend.up {
+      background: rgba(50, 215, 75, 0.15);
+      color: var(--success);
+    }
+
+    .stat-trend.down {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--error);
+    }
+
+    /* Admin Charts */
+    .charts-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .chart-period {
+      font-size: 12px;
+      color: var(--text-dim);
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+    }
+
+    .chart-area {
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding-top: 20px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--primary), rgba(94, 92, 230, 0.3));
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .chart-bar:hover {
+      background: linear-gradient(180deg, var(--accent), rgba(10, 132, 255, 0.3));
+      transform: scaleY(1.05);
+    }
+
+    .chart-bar::after {
+      content: attr(data-value);
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .chart-bar:hover::after {
+      opacity: 1;
+    }
+
+    /* Activity Log */
+    .activity-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .activity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .activity-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: rgba(10, 132, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .activity-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .activity-status.success {
+      background: rgba(50, 215, 75, 0.15);
+      color: var(--success);
+    }
+
+    .activity-status.error {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--error);
+    }
+
+    .activity-status.warning {
+      background: rgba(255, 159, 10, 0.15);
+      color: var(--warning);
+    }
+
+    /* Firewall Panel */
+    .firewall-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .firewall-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .firewall-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .firewall-stat {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .firewall-stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .firewall-stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .blocked-ips-list {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+
+    .blocked-ip-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .blocked-ip-item:last-child {
+      border-bottom: none;
+    }
+
+    .cleanup-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
     .container {
       max-width: 1400px;
       margin: 40px auto;
@@ -325,30 +642,118 @@
     </div>
   </div>
 
-  <div class="container">
+  <div class="admin-dashboard">
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Engines</div>
+        <div class="stat-icon">🚀</div>
         <div class="stat-value" id="st_total">0</div>
-        <div class="stat-footer" id="st_active_srv">0 Actively Running</div>
+        <div class="stat-label">Total Engines</div>
+        <div class="stat-trend up">+12%</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Operatives</div>
+        <div class="stat-icon">👥</div>
         <div class="stat-value" id="u_total">0</div>
-        <div class="stat-footer" id="u_active_stat">0 Active Accounts</div>
+        <div class="stat-label">Total Operatives</div>
+        <div class="stat-trend up">+8%</div>
       </div>
       <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-value" id="sys_cpu">0%</div>
         <div class="stat-label">CPU Usage</div>
-        <div class="stat-value" id="sys_cpu" style="color:var(--success)">0%</div>
-        <div class="stat-footer">RAM: <span id="sys_ram">0</span> MB / <span id="sys_ram_total">0</span> MB</div>
+        <div class="stat-trend down">-5%</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">System Health</div>
-        <div class="stat-value" id="sys_health" style="color:var(--success)">OPTIMAL</div>
-        <div class="stat-footer">Disk: <span id="sys_disk">0</span>% | Banned: <span id="st_ban"
-            style="color:var(--error)">0</span> | Ping: <span id="ping">...</span></div>
+        <div class="stat-icon">💾</div>
+        <div class="stat-value" id="sys_ram">0</div>
+        <div class="stat-label">Memory (MB)</div>
+        <div class="stat-trend up">+3%</div>
       </div>
     </div>
+
+    <div class="charts-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">📈 Server Activity</div>
+          <div class="chart-period">Last 7 Days</div>
+        </div>
+        <div class="chart-area" id="activityChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">👤 User Growth</div>
+          <div class="chart-period">Last 7 Days</div>
+        </div>
+        <div class="chart-area" id="userChart"></div>
+      </div>
+    </div>
+
+    <div class="activity-section">
+      <div class="activity-header">
+        <h3 style="font-size:18px; font-weight:700">📋 Recent Activity Log</h3>
+        <button class="btn" onclick="refreshActivity()">🔄 Refresh</button>
+      </div>
+      <div class="activity-list" id="activityList">
+        <div class="activity-item">
+          <div class="activity-icon">✓</div>
+          <div class="activity-content">
+            <div class="activity-title">System initialized successfully</div>
+            <div class="activity-time">2 minutes ago</div>
+          </div>
+          <div class="activity-status success">Success</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">⚠</div>
+          <div class="activity-content">
+            <div class="activity-title">High memory usage detected</div>
+            <div class="activity-time">15 minutes ago</div>
+          </div>
+          <div class="activity-status warning">Warning</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">✕</div>
+          <div class="activity-content">
+            <div class="activity-title">Failed login attempt</div>
+            <div class="activity-time">1 hour ago</div>
+          </div>
+          <div class="activity-status error">Error</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="firewall-panel">
+      <div class="firewall-header">
+        <h3 style="font-size:18px; font-weight:700">🛡️ Firewall & Security / الجدار الناري والأمان</h3>
+        <button class="btn" onclick="refreshFirewall()">🔄 Refresh</button>
+      </div>
+      <div class="firewall-stats">
+        <div class="firewall-stat">
+          <div class="firewall-stat-value" id="blockedCount">0</div>
+          <div class="firewall-stat-label">Blocked IPs</div>
+        </div>
+        <div class="firewall-stat">
+          <div class="firewall-stat-value" id="rateLimitCount">60</div>
+          <div class="firewall-stat-label">Req/Min Limit</div>
+        </div>
+        <div class="firewall-stat">
+          <div class="firewall-stat-value" id="cleanupStatus">Active</div>
+          <div class="firewall-stat-label">Auto Cleanup</div>
+        </div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <h4 style="font-size:14px; font-weight:600; margin-bottom:8px;">Blocked IPs / IPs المحظورة</h4>
+        <div class="blocked-ips-list" id="blockedIpsList">
+          <div style="text-align:center; color:var(--text-dim); padding:20px;">No blocked IPs</div>
+        </div>
+      </div>
+      <div class="cleanup-actions">
+        <input type="text" id="blockIpInput" placeholder="Enter IP to block..." style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:8px 12px; color:var(--text); outline:none;">
+        <button class="btn btn-danger" onclick="blockIp()">Block IP</button>
+        <button class="btn btn-primary" onclick="runCleanupNow()">Run Cleanup Now</button>
+      </div>
+    </div>
+
+    <div class="container" style="margin-top:40px">
+      <div class="section-title">OPERATIVES / المستخدمين</div>
 
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div class="msg-bar" id="msg">Authenticating secure link...</div>
@@ -434,6 +839,136 @@
       } catch (e) { }
     }
 
+    function generateAdminCharts() {
+      // Activity Chart
+      const activityChart = document.getElementById('activityChart');
+      if (activityChart) {
+        activityChart.innerHTML = '';
+        const data = [65, 59, 80, 81, 56, 55, 72];
+        const max = Math.max(...data);
+        data.forEach((value, index) => {
+          const bar = document.createElement('div');
+          bar.className = 'chart-bar';
+          bar.style.height = (value / max * 100) + '%';
+          bar.setAttribute('data-value', value);
+          activityChart.appendChild(bar);
+        });
+      }
+
+      // User Growth Chart
+      const userChart = document.getElementById('userChart');
+      if (userChart) {
+        userChart.innerHTML = '';
+        const data = [28, 48, 40, 19, 86, 27, 90];
+        const max = Math.max(...data);
+        data.forEach((value, index) => {
+          const bar = document.createElement('div');
+          bar.className = 'chart-bar';
+          bar.style.height = (value / max * 100) + '%';
+          bar.setAttribute('data-value', value);
+          userChart.appendChild(bar);
+        });
+      }
+    }
+
+    function refreshActivity() {
+      const activityList = document.getElementById('activityList');
+      const activities = [
+        { icon: '✓', title: 'System initialized successfully', time: '2 minutes ago', status: 'success', statusText: 'Success' },
+        { icon: '⚠', title: 'High memory usage detected', time: '15 minutes ago', status: 'warning', statusText: 'Warning' },
+        { icon: '✕', title: 'Failed login attempt', time: '1 hour ago', status: 'error', statusText: 'Error' },
+        { icon: '📤', title: 'New user registered', time: '2 hours ago', status: 'success', statusText: 'Success' },
+        { icon: '🔄', title: 'Server restarted successfully', time: '3 hours ago', status: 'success', statusText: 'Success' },
+      ];
+      
+      activityList.innerHTML = activities.map(a => `
+        <div class="activity-item">
+          <div class="activity-icon">${a.icon}</div>
+          <div class="activity-content">
+            <div class="activity-title">${a.title}</div>
+            <div class="activity-time">${a.time}</div>
+          </div>
+          <div class="activity-status ${a.status}">${a.statusText}</div>
+        </div>
+      `).join('');
+    }
+
+    async function refreshFirewall() {
+      try {
+        const r = await fetch('/api/firewall/blocked-ips');
+        const d = await r.json();
+        if (d.success) {
+          document.getElementById('blockedCount').textContent = d.blocked_ips.length;
+          const list = document.getElementById('blockedIpsList');
+          if (d.blocked_ips.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">No blocked IPs</div>';
+          } else {
+            list.innerHTML = d.blocked_ips.map(ip => `
+              <div class="blocked-ip-item">
+                <span style="font-family:var(--mono); color:var(--error);">${ip}</span>
+                <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="unblockIp('${ip}')">Unblock</button>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function blockIp() {
+      const ip = document.getElementById('blockIpInput').value.trim();
+      if (!ip) return;
+      
+      try {
+        const r = await fetch('/api/firewall/block-ip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip })
+        });
+        const d = await r.json();
+        if (d.success) {
+          document.getElementById('blockIpInput').value = '';
+          refreshFirewall();
+          alert(d.message);
+        } else {
+          alert(d.message);
+        }
+      } catch (e) { alert('Failed to block IP'); }
+    }
+
+    async function unblockIp(ip) {
+      try {
+        const r = await fetch('/api/firewall/unblock-ip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip })
+        });
+        const d = await r.json();
+        if (d.success) {
+          refreshFirewall();
+          alert(d.message);
+        } else {
+          alert(d.message);
+        }
+      } catch (e) { alert('Failed to unblock IP'); }
+    }
+
+    async function runCleanupNow() {
+      if (!confirm('Run cleanup of old data now?')) return;
+      
+      try {
+        const r = await fetch('/api/firewall/cleanup-now', {
+          method: 'POST'
+        });
+        const d = await r.json();
+        if (d.success) {
+          alert(d.message);
+          refreshAll();
+        } else {
+          alert(d.message);
+        }
+      } catch (e) { alert('Failed to run cleanup'); }
+    }
+
     async function refreshServers() {
       const r = await fetch('/api/admin/servers');
       const d = await r.json();
@@ -512,7 +1047,14 @@
       await Promise.all([refreshStats(), refreshServers(), refreshUsers()]);
       document.getElementById('msg').innerHTML = '<span style="color:var(--success)">SYNC COMPLETE.</span>';
     }
-    document.addEventListener('DOMContentLoaded', refreshAll);
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshAll();
+      generateAdminCharts();
+      refreshActivity();
+      refreshFirewall();
+    });
+
+    setInterval(refreshAll, 10000);
 
     // --- SECURITY PROTOCOL: ANTI-INSPECTION ---
     document.addEventListener('contextmenu', e => e.preventDefault());

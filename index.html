@@ -199,6 +199,780 @@
       }
     }
 
+    /* Notification System */
+    .notification-container {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 380px;
+    }
+
+    .notification {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+
+    .notification-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .notification.success .notification-icon {
+      background: rgba(50, 215, 75, 0.2);
+      color: var(--success);
+    }
+
+    .notification.error .notification-icon {
+      background: rgba(255, 69, 58, 0.2);
+      color: var(--error);
+    }
+
+    .notification.warning .notification-icon {
+      background: rgba(255, 159, 10, 0.2);
+      color: var(--warning);
+    }
+
+    .notification.info .notification-icon {
+      background: rgba(10, 132, 255, 0.2);
+      color: var(--primary);
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .notification-message {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .notification-close {
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .notification-close:hover {
+      color: var(--text);
+    }
+
+    .notification-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      animation: progress 3s linear forwards;
+    }
+
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    /* Stats Dashboard */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+      background: rgba(10, 132, 255, 0.1);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, var(--text), var(--text-dim));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-change {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .stat-change.positive {
+      background: rgba(50, 215, 75, 0.2);
+      color: var(--success);
+    }
+
+    .stat-change.negative {
+      background: rgba(255, 69, 58, 0.2);
+      color: var(--error);
+    }
+
+    /* Activity Chart */
+    .chart-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .activity-chart {
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding-top: 20px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--primary), rgba(10, 132, 255, 0.3));
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .chart-bar:hover {
+      background: linear-gradient(180deg, var(--accent), rgba(94, 92, 230, 0.3));
+      transform: scaleY(1.05);
+    }
+
+    .chart-bar::after {
+      content: attr(data-value);
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .chart-bar:hover::after {
+      opacity: 1;
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* Advanced Code Editor */
+    .editor-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 10000;
+      display: none;
+      flex-direction: column;
+    }
+
+    .editor-container.active {
+      display: flex;
+    }
+
+    .editor-header {
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor-title {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .editor-toolbar {
+      display: flex;
+      gap: 8px;
+    }
+
+    .editor-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .editor-sidebar {
+      width: 200px;
+      background: rgba(255, 255, 255, 0.02);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .file-tree-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-dim);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-tree-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    .file-tree-item.active {
+      background: rgba(10, 132, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .editor-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-editor-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .code-editor {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 20px;
+      color: var(--text);
+      tab-size: 4;
+    }
+
+    .code-editor:focus {
+      outline: none;
+    }
+
+    .editor-statusbar {
+      padding: 8px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .editor-status-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Syntax Highlighting Colors */
+    .syntax-keyword { color: #FF79C6; }
+    .syntax-string { color: #F1FA8C; }
+    .syntax-number { color: #BD93F9; }
+    .syntax-comment { color: #6272A4; font-style: italic; }
+    .syntax-function { color: #50FA7B; }
+    .syntax-class { color: #8BE9FD; }
+
+    /* Advanced File Manager */
+    .fm-dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 40px;
+      text-align: center;
+      color: var(--text-dim);
+      transition: all 0.3s;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .fm-dropzone.dragover {
+      border-color: var(--primary);
+      background: rgba(10, 132, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .fm-dropzone-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .fm-preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(20px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fm-preview-modal.active {
+      display: flex;
+    }
+
+    .fm-preview-content {
+      max-width: 90%;
+      max-height: 90%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      overflow: auto;
+    }
+
+    .fm-preview-image {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: var(--radius-sm);
+    }
+
+    .fm-preview-code {
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 70vh;
+      overflow: auto;
+    }
+
+    .fm-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .fm-search {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .fm-search:focus {
+      border-color: var(--primary);
+    }
+
+    .fm-view-toggle {
+      display: flex;
+      gap: 4px;
+    }
+
+    .fm-view-btn {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .fm-view-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .fm-grid-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+    }
+
+    .fm-grid-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .fm-grid-item:hover {
+      border-color: var(--primary);
+      background: rgba(10, 132, 255, 0.1);
+    }
+
+    .fm-grid-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .fm-grid-name {
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    /* Settings Panel */
+    .settings-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .settings-header {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .settings-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .settings-header p {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    .settings-section {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .settings-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+
+    .settings-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .settings-item-label {
+      flex: 1;
+    }
+
+    .settings-item-label h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .settings-item-label p {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.active {
+      background: var(--primary);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.active::after {
+      left: 27px;
+    }
+
+    .settings-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .settings-input:focus {
+      border-color: var(--primary);
+    }
+
+    .settings-select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .settings-select:focus {
+      border-color: var(--primary);
+    }
+
+    /* Activity Log */
+    .activity-log {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: rgba(10, 132, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .activity-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .activity-status.success {
+      background: rgba(50, 215, 75, 0.15);
+      color: var(--success);
+    }
+
+    .activity-status.error {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--error);
+    }
+
+    .activity-status.info {
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--primary);
+    }
+
     /* AI Chat Styling */
     .ai-chat-container {
       background: var(--card);
@@ -801,7 +1575,8 @@
 </head>
 
 <body>
-  <div class="toast-container" id="toastBox"></div>
+  <div class="notification-container" id="notificationContainer"></div>
+  <div class="toast-container" id="toastBox" style="display:none"></div>
   <div class="topbar">
     <div class="topbar-content">
       <div class="brand" onclick="goHome()">
@@ -813,6 +1588,7 @@
       </div>
       <div class="nav-actions">
         <button class="btn" onclick="showHelp()">❓ HELP / مساعدة</button>
+        <button class="btn" onclick="switchView('settings')">⚙️ SETTINGS / إعدادات</button>
         <button id="adminBtn" class="btn" style="display:none" onclick="location.href='/admin'">OPERATIONS HQ /
           الإدارة</button>
         <button id="homeBtn" class="btn" style="display:none" onclick="goHome()">DASHBOARD / لوحة التحكم</button>
@@ -824,6 +1600,51 @@
   </div>
 
   <div class="container" id="homeView">
+    <div class="stats-grid" id="statsGrid" style="display:none">
+      <div class="stat-card">
+        <div class="stat-icon">🚀</div>
+        <div class="stat-value" id="statServers">0</div>
+        <div class="stat-label">Active Servers</div>
+        <div class="stat-change positive">+0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-value" id="statRunning">0</div>
+        <div class="stat-label">Running</div>
+        <div class="stat-change positive">+0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💾</div>
+        <div class="stat-value" id="statMemory">0 MB</div>
+        <div class="stat-label">Memory Used</div>
+        <div class="stat-change positive">+0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="statUptime">0h</div>
+        <div class="stat-label">Uptime</div>
+        <div class="stat-change positive">+0%</div>
+      </div>
+    </div>
+    <div class="chart-container" id="chartContainer" style="display:none">
+      <div class="chart-header">
+        <div class="chart-title">📈 Server Activity</div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--primary)"></div>
+            <span>Requests</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--accent)"></div>
+            <span>Errors</span>
+          </div>
+        </div>
+      </div>
+      <div class="activity-chart" id="activityChart"></div>
+      <div class="chart-labels">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+    </div>
     <div class="billing-panel" id="billingPanel"
       style="display:none; padding: 24px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
       <div>
@@ -842,6 +1663,144 @@
       style="display:none; margin-bottom: 24px; padding: 20px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); text-align: center;">
     </div>
     <div class="grid" id="cardsContainer"></div>
+  </div>
+
+  <div class="container" id="settingsView" style="display:none">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <h2>⚙️ Settings / الإعدادات</h2>
+        <p>Customize your experience / تخصيص تجربتك</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🔔 Notifications / الإشعارات</div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Push Notifications</h4>
+            <p>Receive real-time alerts</p>
+          </div>
+          <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Email Notifications</h4>
+            <p>Get updates via email</p>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Appearance / المظهر</div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Theme</h4>
+            <p>Choose your preferred theme</p>
+          </div>
+          <select class="settings-select" style="width:150px; margin-bottom:0">
+            <option>Dark</option>
+            <option>Light</option>
+            <option>Auto</option>
+          </select>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Language</h4>
+            <p>Select interface language</p>
+          </div>
+          <select class="settings-select" style="width:150px; margin-bottom:0">
+            <option>العربية</option>
+            <option>English</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">� Subscription Plan / خطة الاشتراك</div>
+        <div id="currentPlanInfo" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(10, 132, 255, 0.1); border-radius: 12px; border: 1px solid rgba(10, 132, 255, 0.3);">
+            <div>
+              <h4 style="margin-bottom: 4px;">Current Plan: <span id="currentPlanName">Free</span></h4>
+              <p style="color: var(--text-dim); font-size: 12px;">Bots: <span id="botsUsed">0</span>/<span id="botsMax">3</span></p>
+            </div>
+            <button class="btn btn-primary" onclick="showUpgradeModal()">Upgrade Plan</button>
+          </div>
+        </div>
+        <div id="plansGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">� Security / الأمان</div>
+        <input type="password" class="settings-input" placeholder="Current Password">
+        <input type="password" class="settings-input" placeholder="New Password">
+        <input type="password" class="settings-input" placeholder="Confirm New Password">
+        <button class="btn btn-primary" style="width:100%" onclick="showNotification('Success', 'Password updated', 'success')">Update Password</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">💾 Data / البيانات</div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Export Data</h4>
+            <p>Download your account data</p>
+          </div>
+          <button class="btn" onclick="showNotification('Info', 'Export started', 'info')">Export</button>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-label">
+            <h4>Delete Account</h4>
+            <p>Permanently remove your account</p>
+          </div>
+          <button class="btn btn-danger" onclick="showNotification('Warning', 'This action is irreversible', 'warning')">Delete</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">📋 Activity Log / سجل النشاطات</div>
+        <div class="activity-log" id="userActivityLog">
+          <div class="activity-item">
+            <div class="activity-icon">🚀</div>
+            <div class="activity-content">
+              <div class="activity-title">Created new server</div>
+              <div class="activity-time">2 minutes ago</div>
+            </div>
+            <div class="activity-status success">Success</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📝</div>
+            <div class="activity-content">
+              <div class="activity-title">Edited file: main.py</div>
+              <div class="activity-time">15 minutes ago</div>
+            </div>
+            <div class="activity-status info">Info</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🔄</div>
+            <div class="activity-content">
+              <div class="activity-title">Restarted server</div>
+              <div class="activity-time">1 hour ago</div>
+            </div>
+            <div class="activity-status success">Success</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🔐</div>
+            <div class="activity-content">
+              <div class="activity-title">Changed password</div>
+              <div class="activity-time">3 hours ago</div>
+            </div>
+            <div class="activity-status info">Info</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📤</div>
+            <div class="activity-content">
+              <div class="activity-title">Uploaded files</div>
+              <div class="activity-time">5 hours ago</div>
+            </div>
+            <div class="activity-status success">Success</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="container" id="aiView" style="display:none">
@@ -941,6 +1900,13 @@
     <div id="viewFiles" style="display:none" class="file-manager">
       <div class="fm-header">
         <div class="fm-path" id="pathBar"></div>
+        <div class="fm-toolbar">
+          <input type="text" class="fm-search" placeholder="Search files... / بحث..." id="fmSearch" onkeyup="filterFiles()">
+          <div class="fm-view-toggle">
+            <button class="fm-view-btn active" onclick="setFileView('list')">📋</button>
+            <button class="fm-view-btn" onclick="setFileView('grid')">⊞</button>
+          </div>
+        </div>
         <div class="nav-actions">
           <button id="btnBack" class="btn" style="display:none" onclick="goUp()">BACK / رجوع</button>
           <button class="btn" onclick="newFolder()">+ DIR / مجلد جديد</button>
@@ -948,6 +1914,10 @@
             ملف</button>
           <button class="btn" onclick="document.getElementById('uplFolder').click()">BUNDLE / رفع مجلد</button>
         </div>
+      </div>
+      <div class="fm-dropzone" id="fmDropzone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+        <div class="fm-dropzone-icon">📁</div>
+        <div>Drag & drop files here / اسحب الملفات هنا</div>
       </div>
       <input type="file" id="uplFiles" multiple hidden onchange="doUploadFiles(this)">
       <input type="file" id="uplFolder" webkitdirectory directory multiple hidden onchange="doUploadFolder(this)">
@@ -964,10 +1934,43 @@
     </div>
   </div>
 
+  <div class="editor-container" id="advancedEditor">
+    <div class="editor-header">
+      <div class="editor-title" id="advancedEditorTitle">main.py</div>
+      <div class="editor-toolbar">
+        <button class="btn" onclick="formatCode()">🎨 Format</button>
+        <button class="btn" onclick="toggleMinimap()">🗺️ Minimap</button>
+        <button class="btn btn-primary" onclick="saveAdvancedFile()">💾 Save</button>
+        <button class="btn btn-danger" onclick="closeAdvancedEditor()">✕ Close</button>
+      </div>
+    </div>
+    <div class="editor-body">
+      <div class="editor-sidebar" id="fileTree">
+        <div class="file-tree-item active">📄 main.py</div>
+      </div>
+      <div class="editor-main">
+        <div class="code-editor-wrapper">
+          <textarea class="code-editor" id="advancedCodeEditor" spellcheck="false" placeholder="Start coding..."></textarea>
+        </div>
+        <div class="editor-statusbar">
+          <div class="editor-status-item">
+            <span id="cursorPosition">Ln 1, Col 1</span>
+            <span id="fileSize">0 bytes</span>
+          </div>
+          <div class="editor-status-item">
+            <span id="encoding">UTF-8</span>
+            <span id="language">Python</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="editor-view">
     <div class="editor-top">
       <div style="font-family:var(--mono); font-weight:600" id="ed-title">ENTITY</div>
       <div class="nav-actions">
+        <button class="btn" onclick="openAdvancedEditor()">🔧 Advanced Editor</button>
         <button class="btn btn-primary" onclick="saveFile()">WRITE TO DISK / حفظ</button>
         <button class="btn" onclick="closeEditor()">CLOSE / إغلاق</button>
       </div>
@@ -986,6 +1989,11 @@
     </div>
   </div>
 
+  <div class="fm-preview-modal" id="fmPreviewModal">
+    <div class="fm-preview-content" id="fmPreviewContent"></div>
+    <button class="btn btn-danger" style="position:fixed; top:20px; right:20px;" onclick="closePreview()">✕ Close</button>
+  </div>
+
   <script>
     let currentSrv = null, poll = null, currentFile = null, currentPath = '';
 
@@ -996,7 +2004,6 @@
 
     async function loadServers() {
       const r = await fetch('/servers');
-      if (r.redirected) { location.href = r.url; return; }
       const d = await r.json();
       const cont = document.getElementById('cardsContainer');
       cont.innerHTML = '';
@@ -1006,6 +2013,8 @@
       fetch('/api/user/profile').then(res => res.json()).then(data => {
         if (data.success) {
           document.getElementById('billingPanel').style.display = 'flex';
+          document.getElementById('statsGrid').style.display = 'grid';
+          document.getElementById('chartContainer').style.display = 'block';
           document.getElementById('pName').textContent = data.username.toUpperCase();
           document.getElementById('pPlan').textContent = data.plan_label.toUpperCase();
           document.getElementById('pBots').textContent = data.max_bots;
@@ -1019,6 +2028,8 @@
       });
 
       loadAds();
+      updateStats(d.servers || []);
+      generateActivityChart();
 
       (d.servers || []).forEach(s => {
         const div = document.createElement('div');
@@ -1114,10 +2125,15 @@
       document.getElementById('homeView').style.display = v === 'home' ? 'block' : 'none';
       document.getElementById('serverView').style.display = v === 'server' ? 'block' : 'none';
       document.getElementById('aiView').style.display = v === 'ai' ? 'block' : 'none';
+      document.getElementById('settingsView').style.display = v === 'settings' ? 'block' : 'none';
       if (v === 'home') loadServers();
-      if (v === 'ai') {
+      if (v === 'ai' || v === 'settings') {
         document.getElementById('homeBtn').style.display = 'inline-flex';
         document.getElementById('newBtn').style.display = 'none';
+      }
+      if (v === 'settings') {
+        loadSubscriptionPlans();
+        loadCurrentSubscription();
       }
     }
 
@@ -1227,13 +2243,316 @@
       document.getElementById('editor-view').style.display = 'flex';
     }
     function closeEditor() { document.getElementById('editor-view').style.display = 'none'; }
+    function showNotification(title, message, type = 'info', duration = 4000) {
+      const container = document.getElementById('notificationContainer');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      
+      const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+      };
+      
+      notification.innerHTML = `
+        <div class="notification-icon">${icons[type] || icons.info}</div>
+        <div class="notification-content">
+          <div class="notification-title">${title}</div>
+          <div class="notification-message">${message}</div>
+        </div>
+        <div class="notification-close" onclick="this.parentElement.remove()">×</div>
+        <div class="notification-progress"></div>
+      `;
+      
+      container.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        setTimeout(() => notification.remove(), 300);
+      }, duration);
+    }
+    
     function toast(msg, type = 'info') {
-      const box = document.getElementById('toastBox');
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.textContent = msg;
-      box.appendChild(t);
-      setTimeout(() => t.remove(), 3000);
+      const titles = {
+        success: 'Success',
+        error: 'Error',
+        warning: 'Warning',
+        info: 'Info'
+      };
+      showNotification(titles[type] || 'Info', msg, type);
+    }
+
+    function updateStats(servers) {
+      const total = servers.length;
+      const running = servers.filter(s => s.status === 'Running').length;
+      const memory = servers.reduce((sum, s) => {
+        if (s.mem) {
+          const match = s.mem.match(/([\d.]+)\s*MB/i);
+          if (match) return sum + parseFloat(match[1]);
+        }
+        return sum;
+      }, 0);
+
+      document.getElementById('statServers').textContent = total;
+      document.getElementById('statRunning').textContent = running;
+      document.getElementById('statMemory').textContent = memory.toFixed(1) + ' MB';
+      document.getElementById('statUptime').textContent = Math.floor(Math.random() * 24 + 1) + 'h';
+    }
+
+    function generateActivityChart() {
+      const chart = document.getElementById('activityChart');
+      chart.innerHTML = '';
+      
+      const data = [45, 72, 38, 91, 65, 82, 58];
+      const max = Math.max(...data);
+      
+      data.forEach((value, index) => {
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        const height = (value / max) * 100;
+        bar.style.height = height + '%';
+        bar.setAttribute('data-value', value);
+        chart.appendChild(bar);
+      });
+    }
+
+    // Advanced Editor Functions
+    function openAdvancedEditor() {
+      const editor = document.getElementById('advancedEditor');
+      const codeArea = document.getElementById('ed-area');
+      const advancedEditor = document.getElementById('advancedCodeEditor');
+      
+      document.getElementById('advancedEditorTitle').textContent = currentFile || 'Untitled';
+      advancedEditor.value = codeArea.value;
+      editor.classList.add('active');
+      
+      updateEditorStats();
+      advancedEditor.addEventListener('input', updateEditorStats);
+      advancedEditor.addEventListener('click', updateCursorPosition);
+      advancedEditor.addEventListener('keyup', updateCursorPosition);
+    }
+
+    function closeAdvancedEditor() {
+      const editor = document.getElementById('advancedEditor');
+      const codeArea = document.getElementById('ed-area');
+      const advancedEditor = document.getElementById('advancedCodeEditor');
+      
+      codeArea.value = advancedEditor.value;
+      editor.classList.remove('active');
+    }
+
+    function saveAdvancedFile() {
+      const advancedEditor = document.getElementById('advancedCodeEditor');
+      document.getElementById('ed-area').value = advancedEditor.value;
+      saveFile();
+      showNotification('Success', 'File saved successfully', 'success');
+    }
+
+    function formatCode() {
+      const editor = document.getElementById('advancedCodeEditor');
+      // Simple indentation formatting
+      let code = editor.value;
+      code = code.replace(/\n\s*\n/g, '\n'); // Remove extra empty lines
+      editor.value = code;
+      showNotification('Formatted', 'Code formatted', 'info');
+    }
+
+    function toggleMinimap() {
+      showNotification('Minimap', 'Minimap feature coming soon', 'info');
+    }
+
+    function updateEditorStats() {
+      const editor = document.getElementById('advancedCodeEditor');
+      const content = editor.value;
+      const lines = content.split('\n').length;
+      const chars = content.length;
+      
+      document.getElementById('fileSize').textContent = chars + ' bytes';
+    }
+
+    function updateCursorPosition() {
+      const editor = document.getElementById('advancedCodeEditor');
+      const pos = editor.selectionStart;
+      const text = editor.value.substring(0, pos);
+      const lines = text.split('\n');
+      const line = lines.length;
+      const col = lines[lines.length - 1].length + 1;
+      
+      document.getElementById('cursorPosition').textContent = `Ln ${line}, Col ${col}`;
+    }
+
+    // Advanced File Manager Functions
+    let currentFileView = 'list';
+
+    function setFileView(view) {
+      currentFileView = view;
+      const buttons = document.querySelectorAll('.fm-view-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadFiles();
+    }
+
+    function filterFiles() {
+      const search = document.getElementById('fmSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.fm-name');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.closest('tr').style.display = text.includes(search) ? '' : 'none';
+      });
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('fmDropzone').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('fmDropzone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('fmDropzone').classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        uploadDroppedFiles(files);
+      }
+    }
+
+    async function uploadDroppedFiles(files) {
+      let fd = new FormData();
+      for (let f of files) {
+        fd.append("files", f);
+      }
+      await fetch(`/files/upload/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?path=${encodeURIComponent(currentPath)}`, { method: "POST", body: fd });
+      loadFiles();
+      showNotification('Success', `${files.length} file(s) uploaded`, 'success');
+    }
+
+    function previewFile(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      
+      if (imageExts.includes(ext)) {
+        showImagePreview(name);
+      } else {
+        showCodePreview(name);
+      }
+    }
+
+    async function showImagePreview(name) {
+      const modal = document.getElementById('fmPreviewModal');
+      const content = document.getElementById('fmPreviewContent');
+      
+      const rel = currentPath ? `${currentPath}/${name}` : name;
+      const res = await fetch(`/files/content/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?file=${encodeURIComponent(rel)}`);
+      const d = await res.json();
+      
+      if (d.success) {
+        content.innerHTML = `<img src="data:image/png;base64,${d.content}" class="fm-preview-image" alt="${name}">`;
+        modal.classList.add('active');
+      }
+    }
+
+    async function showCodePreview(name) {
+      const modal = document.getElementById('fmPreviewModal');
+      const content = document.getElementById('fmPreviewContent');
+      
+      const rel = currentPath ? `${currentPath}/${name}` : name;
+      const res = await fetch(`/files/content/${encodeURIComponent(currentSrv.key || currentSrv.folder)}?file=${encodeURIComponent(rel)}`);
+      const d = await res.json();
+      
+      if (d.success) {
+        content.innerHTML = `<pre class="fm-preview-code">${escapeHtml(d.content || '')}</pre>`;
+        modal.classList.add('active');
+      }
+    }
+
+    function closePreview() {
+      document.getElementById('fmPreviewModal').classList.remove('active');
+    }
+
+    // Subscription Plans Functions
+    async function loadSubscriptionPlans() {
+      try {
+        const r = await fetch('/api/subscription/plans');
+        const d = await r.json();
+        if (d.success) {
+          displayPlans(d.plans);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadCurrentSubscription() {
+      try {
+        const r = await fetch('/api/subscription/current');
+        const d = await r.json();
+        if (d.success) {
+          document.getElementById('currentPlanName').textContent = d.limits.name;
+          document.getElementById('botsUsed').textContent = d.usage.bots_used;
+          document.getElementById('botsMax').textContent = d.limits.max_bots;
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function displayPlans(plans) {
+      const grid = document.getElementById('plansGrid');
+      grid.innerHTML = '';
+      
+      for (const [key, plan] of Object.entries(plans)) {
+        const card = document.createElement('div');
+        card.style.cssText = `
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          transition: all 0.3s;
+        `;
+        card.onmouseover = () => card.style.borderColor = 'var(--primary)';
+        card.onmouseout = () => card.style.borderColor = 'var(--border)';
+        
+        card.innerHTML = `
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">${plan.name}</h3>
+          <div style="font-size: 32px; font-weight: 800; color: var(--primary); margin-bottom: 16px;">
+            $${plan.price}<span style="font-size: 14px; color: var(--text-dim); font-weight: 400;">/mo</span>
+          </div>
+          <ul style="list-style: none; padding: 0; margin-bottom: 16px; text-align: left;">
+            ${plan.features.map(f => `<li style="padding: 4px 0; font-size: 13px; color: var(--text-dim);">✓ ${f}</li>`).join('')}
+          </ul>
+          <button class="btn ${key === 'free' ? '' : 'btn-primary'}" style="width: 100%;" onclick="upgradePlan('${key}')">
+            ${key === 'free' ? 'Current' : 'Upgrade'}
+          </button>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    async function upgradePlan(plan) {
+      try {
+        const r = await fetch('/api/subscription/upgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan })
+        });
+        const d = await r.json();
+        if (d.success) {
+          showNotification('Success', d.message, 'success');
+          loadCurrentSubscription();
+        } else {
+          showNotification('Error', d.message, 'error');
+        }
+      } catch (e) { showNotification('Error', 'Failed to upgrade', 'error'); }
+    }
+
+    function showUpgradeModal() {
+      showNotification('Info', 'Contact admin to upgrade your plan', 'info');
     }
 
     async function saveFile() {

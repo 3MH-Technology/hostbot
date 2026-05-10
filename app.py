@@ -652,8 +652,9 @@ def api_register_otp():
     password = data.get("password") or ""
     email = (data.get("email") or "").strip()
 
-    if not email or '@' not in email:
-         return jsonify({"success": False, "message": "البريد الإلكتروني غير صالح"}), 400
+    # Email validation removed - site fully open
+    # if not email or '@' not in email:
+    #      return jsonify({"success": False, "message": "البريد الإلكتروني غير صالح"}), 400
 
     # Disable disposable domain check to make it easy
     # if domain in DISPOSABLE_DOMAINS:
@@ -672,14 +673,15 @@ def api_register_otp():
     if find_user(db, username):
         return jsonify({"success": False, "message": "Username already taken"}), 409
 
-    for u in db.get("users", []):
-        if u.get("email") == email:
-            return jsonify({"success": False, "message": "Email already in use"}), 409
+    # Email duplicate check removed - site fully open
+    # for u in db.get("users", []):
+    #     if u.get("email") == email:
+    #         return jsonify({"success": False, "message": "Email already in use"}), 409
 
     client_ip = get_client_ip()
     new_user = {
         "username": username,
-        "email": email,
+        "email": email or "no-email",
         "password_hash": generate_password_hash(password),
         "active": True,
         "plan": "free",
@@ -1490,6 +1492,265 @@ def run_log_cleaner():
     while True:
         time.sleep(600)
         truncate_large_logs()
+        cleanup_old_data()
+
+
+def cleanup_old_data():
+    """حذف البيانات القديمة والغير نشطة"""
+    try:
+        db = load_db()
+        current_time = time.time()
+        
+        # حذف السيرفرات غير النشطة لأكثر من 30 يوم
+        if "servers" in db:
+            active_servers = []
+            for server in db["servers"]:
+                # حذف السيرفرات غير النشطة لأكثر من 30 يوم
+                if server.get("last_renewed") and (current_time - server["last_renewed"]) > 30 * 24 * 3600:
+                    server_folder = os.path.join(USERS_ROOT, server.get("folder", ""))
+                    if os.path.exists(server_folder):
+                        shutil.rmtree(server_folder, ignore_errors=True)
+                    logger.info(f"Deleted old server: {server.get('folder')}")
+                else:
+                    active_servers.append(server)
+            db["servers"] = active_servers
+        
+        # حذف المستخدمين غير النشطين لأكثر من 90 يوم
+        if "users" in db:
+            active_users = []
+            for user in db["users"]:
+                if user.get("last_active") and (current_time - user["last_active"]) > 90 * 24 * 3600:
+                    user_folder = os.path.join(USERS_ROOT, user.get("username", ""))
+                    if os.path.exists(user_folder):
+                        shutil.rmtree(user_folder, ignore_errors=True)
+                    logger.info(f"Deleted inactive user: {user.get('username')}")
+                else:
+                    active_users.append(user)
+            db["users"] = active_users
+        
+        save_db(db)
+        logger.info("Cleanup of old data completed")
+    except Exception as e:
+        logger.error(f"Error during cleanup: {e}")
+
+
+# نظام الحماية والجدار الناري
+class Firewall:
+    def __init__(self):
+        self.blocked_ips = set()
+        self.rate_limits = defaultdict(list)
+        self.max_requests_per_minute = 60
+        self.block_duration = 3600  # ساعة
+    
+    def is_blocked(self, ip):
+        """التحقق إذا كان IP محظور"""
+        return ip in self.blocked_ips
+    
+    def block_ip(self, ip):
+        """حظر IP"""
+        self.blocked_ips.add(ip)
+        logger.warning(f"Blocked IP: {ip}")
+    
+    def check_rate_limit(self, ip):
+        """التحقق من الحد الأقصى للطلبات"""
+        current_time = time.time()
+        # إزالة الطلبات القديمة (أقدم من دقيقة)
+        self.rate_limits[ip] = [t for t in self.rate_limits[ip] if current_time - t < 60]
+        
+        if len(self.rate_limits[ip]) >= self.max_requests_per_minute:
+            self.block_ip(ip)
+            return False
+        
+        self.rate_limits[ip].append(current_time)
+        return True
+    
+    def unblock_ip(self, ip):
+        """إلغاء حظر IP"""
+        if ip in self.blocked_ips:
+            self.blocked_ips.remove(ip)
+            logger.info(f"Unblocked IP: {ip}")
+
+
+firewall = Firewall()
+
+
+# نظام الحميات (Subscription Plans)
+SUBSCRIPTION_PLANS = {
+    "free": {
+        "name": "Free",
+        "price": 0,
+        "max_bots": 3,
+        "max_mem_mb": 256,
+        "max_cpu_percent": 50,
+        "features": ["3 Bots", "256MB RAM", "Basic Support"]
+    },
+    "basic": {
+        "name": "Basic",
+        "price": 10,
+        "max_bots": 5,
+        "max_mem_mb": 512,
+        "max_cpu_percent": 70,
+        "features": ["5 Bots", "512MB RAM", "Priority Support", "Advanced Analytics"]
+    },
+    "pro": {
+        "name": "Pro",
+        "price": 25,
+        "max_bots": 10,
+        "max_mem_mb": 1024,
+        "max_cpu_percent": 80,
+        "features": ["10 Bots", "1GB RAM", "24/7 Support", "Advanced Analytics", "Custom Domain"]
+    },
+    "enterprise": {
+        "name": "Enterprise",
+        "price": 100,
+        "max_bots": 50,
+        "max_mem_mb": 4096,
+        "max_cpu_percent": 90,
+        "features": ["50 Bots", "4GB RAM", "Dedicated Support", "Advanced Analytics", "Custom Domain", "API Access", "White Label"]
+    }
+}
+
+
+def get_user_plan(username):
+    """الحصول على خطة المستخدم"""
+    db = load_db()
+    for user in db.get("users", []):
+        if user.get("username") == username:
+            return user.get("plan", "free")
+    return "free"
+
+
+def get_plan_limits(plan):
+    """الحصول على حدود الخطة"""
+    return SUBSCRIPTION_PLANS.get(plan, SUBSCRIPTION_PLANS["free"])
+
+
+def check_plan_limits(username):
+    """التحقق من حدود خطة المستخدم"""
+    plan = get_user_plan(username)
+    limits = get_plan_limits(plan)
+    
+    db = load_db()
+    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    
+    if len(user_servers) >= limits["max_bots"]:
+        return False, f"You have reached the maximum number of bots ({limits['max_bots']}) for your {limits['name']} plan"
+    
+    return True, None
+
+
+# API endpoints للحميات
+@app.route("/api/subscription/plans", methods=["GET"])
+@login_required
+def get_subscription_plans():
+    """الحصول على جميع خطط الاشتراك"""
+    return jsonify({"success": True, "plans": SUBSCRIPTION_PLANS})
+
+
+@app.route("/api/subscription/current", methods=["GET"])
+@login_required
+def get_current_subscription():
+    """الحصول على خطة المستخدم الحالية"""
+    username = session.get("username")
+    plan = get_user_plan(username)
+    limits = get_plan_limits(plan)
+    
+    db = load_db()
+    user_servers = [s for s in db.get("servers", []) if s.get("owner") == username]
+    
+    return jsonify({
+        "success": True,
+        "plan": plan,
+        "limits": limits,
+        "usage": {
+            "bots_used": len(user_servers),
+            "bots_remaining": limits["max_bots"] - len(user_servers)
+        }
+    })
+
+
+@app.route("/api/subscription/upgrade", methods=["POST"])
+@login_required
+def upgrade_subscription():
+    """ترقية خطة الاشتراك"""
+    username = session.get("username")
+    data = request.get_json()
+    new_plan = data.get("plan")
+    
+    if new_plan not in SUBSCRIPTION_PLANS:
+        return jsonify({"success": False, "message": "Invalid plan"}), 400
+    
+    db = load_db()
+    for user in db.get("users", []):
+        if user.get("username") == username:
+            user["plan"] = new_plan
+            user["plan_updated_at"] = time.time()
+            save_db(db)
+            logger.info(f"User {username} upgraded to {new_plan} plan")
+            return jsonify({"success": True, "message": f"Successfully upgraded to {new_plan} plan"})
+    
+    return jsonify({"success": False, "message": "User not found"}), 404
+
+
+# API endpoints للجدار الناري
+@app.route("/api/firewall/blocked-ips", methods=["GET"])
+@admin_required
+def get_blocked_ips():
+    """الحصول على قائمة IPs المحظورة"""
+    return jsonify({"success": True, "blocked_ips": list(firewall.blocked_ips)})
+
+
+@app.route("/api/firewall/block-ip", methods=["POST"])
+@admin_required
+def block_ip_admin():
+    """حظر IP من قبل الأدمن"""
+    data = request.get_json()
+    ip = data.get("ip")
+    if not ip:
+        return jsonify({"success": False, "message": "IP required"}), 400
+    
+    firewall.block_ip(ip)
+    return jsonify({"success": True, "message": f"IP {ip} blocked"})
+
+
+@app.route("/api/firewall/unblock-ip", methods=["POST"])
+@admin_required
+def unblock_ip_admin():
+    """إلغاء حظر IP من قبل الأدمن"""
+    data = request.get_json()
+    ip = data.get("ip")
+    if not ip:
+        return jsonify({"success": False, "message": "IP required"}), 400
+    
+    firewall.unblock_ip(ip)
+    return jsonify({"success": True, "message": f"IP {ip} unblocked"})
+
+
+@app.route("/api/firewall/cleanup-now", methods=["POST"])
+@admin_required
+def cleanup_now():
+    """تنفيذ تنظيف البيانات القديمة فوراً"""
+    cleanup_old_data()
+    return jsonify({"success": True, "message": "Cleanup completed"})
+
+
+@app.before_request
+def firewall_check():
+    """التحقق من الجدار الناري قبل كل طلب"""
+    if request.path.startswith('/static') or request.path.startswith('/health'):
+        return None
+    
+    client_ip = request.remote_addr or '127.0.0.1'
+    
+    # التحقق من الحظر
+    if firewall.is_blocked(client_ip):
+        return jsonify({"success": False, "message": "IP blocked"}), 403
+    
+    # التحقق من الحد الأقصى للطلبات
+    if not firewall.check_rate_limit(client_ip):
+        return jsonify({"success": False, "message": "Rate limit exceeded"}), 429
+    
+    return None
 
 
 @app.route("/health")

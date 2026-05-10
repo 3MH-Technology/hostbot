@@ -86,6 +86,7 @@
       display: inline-block;
       background: linear-gradient(135deg, #fff, #a1a1a6);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -211,9 +212,6 @@
       <div class="input-group">
         <input id="p" placeholder="Passcode (min 6 chars)" type="password">
       </div>
-      <div class="input-group">
-        <input id="p2" placeholder="Verify Passcode" type="password">
-      </div>
 
       <div class="actions">
         <button class="btn btn-primary" onclick="doCreate()">Submit Request</button>
@@ -233,18 +231,17 @@
       const username = document.getElementById('u').value.trim();
       const email = document.getElementById('e').value.trim();
       const password = document.getElementById('p').value;
-      const password2 = document.getElementById('p2').value;
 
-      const r = await fetch('/api/auth/create', {
+      const r = await fetch('/api/auth/register-otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, password2 })
+        body: JSON.stringify({ username, email, password })
       });
       const d = await r.json().catch(() => ({ success: false, message: 'Server transmission error' }));
       if (!r.ok || !d.success) { m.style.color = "var(--error)"; m.textContent = d.message || 'Clearance denied'; return; }
 
       m.style.color = "#32D74B";
-      m.textContent = 'Clearance granted. Redirecting...';
-      setTimeout(() => location.href = '/login', 1200);
+      m.textContent = d.message || 'Clearance granted. Redirecting...';
+      setTimeout(() => location.href = '/dashboard', 1200);
     }
   </script>
 </body>
